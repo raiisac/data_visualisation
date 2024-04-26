@@ -19,8 +19,11 @@
 			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
 				<a href="/">Home</a>
 			</li>
-			<li aria-current={$page.url.pathname === '/about' ? 'page' : undefined}>
-				<a href="/about">About</a>
+			<li aria-current={$page.url.pathname === '/app1' ? 'page' : undefined}>
+				<a href="/app1">App1</a>
+			</li>
+			<li aria-current={$page.url.pathname === '/app2' ? 'page' : undefined}>
+				<a href="/app2">App2</a>
 			</li>
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
@@ -29,7 +32,7 @@
 	</nav>
 
 	<div class="corner">
-		<a href="https://github.com/sveltejs/kit">
+		<a href="https://github.com/raiisac/data_visualisation">
 			<img src={github} alt="GitHub" />
 		</a>
 	</div>
