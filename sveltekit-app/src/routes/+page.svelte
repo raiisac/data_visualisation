@@ -1,7 +1,7 @@
 <script>
 	import Counter from './Counter.svelte';
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcome_fallback from '$lib/images/svelte-welcome.png';
+	import welcome from '$lib/images/cropped-cropped-Sunpulse.webp';
+	import welcome_fallback from '$lib/images/cropped-cropped-Sunpulse.png';
 </script>
 
 <svelte:head>
@@ -18,14 +18,13 @@
 			</picture>
 		</span>
 
-		to your new<br />SvelteKit app
+		Welcome to the SunCharge visualisation page<br />
 	</h1>
 
 	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
+		Please visit our two applications through the menu on the top of the page to explore SunCharge's business processes.
 	</h2>
 
-	<Counter />
 </section>
 
 <style>
