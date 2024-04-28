@@ -2,10 +2,41 @@
 <script>
 	let possible_years = [2022, 2023, 2024]; // webpage with different input options https://svelte.dev/repl/3aca814fe08e49f08a42a7db3baed19a?version=3.29.4
 	let chosen_year = [2022];
-	let possible_plants = ["Antwerp", "Birmingham", "Göteborg", "Lyon", "Wroclaw"];
+	let possible_plants = ["Antwerp DC", "Birmingham DC", "Göteborg DC", "Lyon DC", "Wrocław DC"];
 	let chosen_plant = ["Antwerp"];
 	let chosen_product = "EV Car Battery";
+	export let data = []
+	let datasales = data.sales
+	// load stuff for radar
+	import { LayerCake, Svg } from 'layercake';
+  	import { scaleLinear } from 'd3-scale';
+	import Radar from '../../components/Radar.svelte';
+	import AxisRadial from '../../components/AxisRadial.svelte';
+  	// This example loads csv data as json using @rollup/plugin-dsv
+  	const radardata = [
+	{
+		name: 'Allison',
+		fastball: 10,
+		change: 0,
+		slider: 4,
+		cutter: 8,
+		curve: 5
+	}];
+	const seriesKey = 'name';
+  	const xKey = ['fastball', 'change', 'slider', 'cutter', 'curve'];
+
+  	const seriesNames = Object.keys(radardata[0]).filter(d => d !== seriesKey);
+
+  	radardata.forEach(d => {
+		seriesNames.forEach(name => {
+			d[name] = +d[name];
+		});
+	});
+
 </script>
+
+
+
 <svelte:head>
 	<title>About</title>
 	<meta name="description" content="About this app" />
@@ -33,11 +64,11 @@
 		<br />
 		<select multiple bind:value={chosen_plant}>
 			<option disabled value="">Please select one!</option>
-			<option>Antwerp</option>
-			<option>Birmingham</option>
-			<option>Göteborg</option>
-			<option>Lyon</option>
-			<option>Wroclaw</option>
+			<option>Antwerp DC</option>
+			<option>Birmingham DC</option>
+			<option>Göteborg DC</option>
+			<option>Lyon DC</option>
+			<option>Wrocław DC</option>
 		</select>
 	</fieldset>
 	<fieldset>
@@ -50,3 +81,48 @@
 	</label>
 	</fieldset>
 </div>
+
+<div class="chart-container">
+	<LayerCake
+	  padding={{ top: 30, right: 0, bottom: 7, left: 0 }}
+	  x={xKey}
+	  xDomain={[0, 10]}
+	  xRange={({ height }) => [0, height / 2]}
+	  {radardata}
+	>
+	<Svg>
+		<AxisRadial/>
+		<Radar/>
+	</Svg>
+</LayerCake>
+</div>
+
+
+select a column and show it:
+<ul>
+	{#each data.sales as name, i}
+		{#if i <=5} <!-- only show the first elements in the table notice indices start at 0!-->
+			<li>{name.plant_name}</li>
+		{/if}
+	{/each}
+</ul>
+
+
+Show all data as a check:
+{JSON.stringify(data.sales)}
+
+<style>
+	/*
+	  The wrapper div needs to have an explicit width and height in CSS.
+	  It can also be a flexbox child or CSS grid element.
+	  The point being it needs dimensions since the <LayerCake> element will
+	  expand to fill it.
+	*/
+	.chart-container {
+	  width: 250px;
+	  height: 250px;
+	  /*border: 10px red;
+	  background-color: coral;
+	  */
+	}
+</style>

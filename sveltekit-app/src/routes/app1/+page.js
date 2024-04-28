@@ -1,9 +1,14 @@
-import { dev } from '$app/environment';
+import Papa from 'papaparse'
 
-// we don't need any JS on this page, though we'll load
-// it in dev so that we get hot module replacement
-export const csr = dev;
+export const load = async ({ fetch }) => {
+    const responseSales = await fetch('https://raw.githubusercontent.com/raiisac/data_visualisation/main/sveltekit-app/static/Sales.csv', {
+      headers: {
+        'Content-Type': 'text/csv'
+    }})
+    let csvSales = await responseSales.text()
+    let parsedCsvSales = Papa.parse(csvSales, {header: true})
 
-// since there's no dynamic data here, we can prerender
-// it so that it gets served as a static asset in production
-export const prerender = true;
+    return {
+      sales: parsedCsvSales.data
+    }
+}
