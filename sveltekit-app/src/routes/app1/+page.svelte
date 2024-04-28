@@ -12,6 +12,7 @@
   	import { scaleLinear } from 'd3-scale';
 	import Radar from '../../components/Radar.svelte';
 	import AxisRadial from '../../components/AxisRadial.svelte';
+	
   	// This example loads csv data as json using @rollup/plugin-dsv
   	const radardata = [
 	{
@@ -32,7 +33,7 @@
 			d[name] = +d[name];
 		});
 	});
-
+	
 </script>
 
 
@@ -88,7 +89,7 @@
 	  x={xKey}
 	  xDomain={[0, 10]}
 	  xRange={({ height }) => [0, height / 2]}
-	  {radardata}
+	  data = { radardata }
 	>
 	<Svg>
 		<AxisRadial/>
