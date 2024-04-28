@@ -1,7 +1,7 @@
 import Papa from 'papaparse'
 
 export const load = async ({ fetch }) => {
-    const responseSales = await fetch('https://raw.githubusercontent.com/raiisac/data_visualisation/main/sveltekit-app/static/Sales.csv', {
+    const responseSales = await fetch('https://raw.githubusercontent.com/raiisac/data_visualisation/main/sveltekit-app/static/sales_radar.csv', {
       headers: {
         'Content-Type': 'text/csv'
     }})
