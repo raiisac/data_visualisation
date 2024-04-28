@@ -1,3 +1,14 @@
-// since there's no dynamic data here, we can prerender
-// it so that it gets served as a static asset in production
-export const prerender = true;
+import Papa from 'papaparse'
+
+export const load = async ({ fetch }) => {
+    const responseSales = await fetch('https://raw.githubusercontent.com/raiisac/data_visualisation/main/sveltekit-app/static/Sales.csv', {
+      headers: {
+        'Content-Type': 'text/csv'
+    }})
+    let csvSales = await responseSales.text()
+    let parsedCsvSales = Papa.parse(csvSales, {header: true})
+
+    return {
+      sales: parsedCsvSales.data
+    }
+}
