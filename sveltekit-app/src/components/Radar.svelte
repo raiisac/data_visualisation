@@ -6,25 +6,25 @@
 	import { getContext } from 'svelte';
 	import { line, curveCardinalClosed } from 'd3-shape';
 
-	const { data, width, height, xGet, config } = getContext('LayerCake');
+	const { data, width, height, xGet, zGet, zScale, config } = getContext('LayerCake');
 
 	/**	@type {String} [fill='#f0c'] The radar's fill color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
-	export let fill = '#f0c'
+	export let fill = undefined
 
 	/**	@type {String} [stroke='#f0c'] The radar's stroke color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
-	export let stroke = '#f0c'
+	export let stroke = undefined
 
 	/**	@type {Number} [stroke=2] The radar's stroke color. */
 	export let strokeWidth = 2
 
 	/**	@type {Number} [fillOpacity=0.5] The radar's fill opacity. */
-	export let fillOpacity = 0.5
+	export let fillOpacity = 0.2
 
 	/**	@type {Number} [r=4.5] Each circle's radius. */
 	export let r = 4.5;
 
 	/**	@type {String} [circleFill="#f0c"] Each circle's fill color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
-	export let circleFill = "#f0c";
+	export let circleFill = undefined;
 
 	/**	@type {String} [circleStroke="#fff"] Each circle's stroke color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
 	export let circleStroke = "#fff";
@@ -61,9 +61,9 @@
 		<path
 			class='path-line'
 			d='{path(xVals)}'
-			stroke="{stroke}"
+			stroke="{stroke || $zGet(row)}"
 			stroke-width="{strokeWidth}"
-			fill="{fill}"
+			fill="{fill || $zGet(row)}"
 			fill-opacity="{fillOpacity}"
 		></path>
 
@@ -74,9 +74,10 @@
 				cx={circleR * Math.cos(thisAngleSlice)}
 				cy={circleR * Math.sin(thisAngleSlice)}
 				r="{r}"
-				fill="{circleFill}"
+				fill="{circleFill || $zGet(row)}"
 				stroke="{circleStroke}"
 				stroke-width="{circleStrokeWidth}"
+				data-label = {xVals}
 			></circle>
 		{/each}
 	{/each}

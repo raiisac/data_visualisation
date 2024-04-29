@@ -6,10 +6,9 @@
 	let chosen_plant = ["Antwerp"];
 	let chosen_product = "EV Car Battery";
 	export let data = []
-	let datasales = data.sales
 	// load stuff for radar
 	import { LayerCake, Svg } from 'layercake';
-  	import { scaleLinear } from 'd3-scale';
+  	import { scaleLinear, scaleOrdinal  } from 'd3-scale';
 	import Radar from '../../components/Radar.svelte';
 	import AxisRadial from '../../components/AxisRadial.svelte';
 	
@@ -22,21 +21,27 @@
 		slider: 4,
 		cutter: 8,
 		curve: 5
+	},
+	{
+		name: 'Bert',
+		fastball: 8,
+		change: 2,
+		slider: 2,
+		cutter: 6,
+		curve: 7
 	}];
 	const seriesKey = 'name';
   	const xKey = ['fastball', 'change', 'slider', 'cutter', 'curve'];
-
-  	const seriesNames = Object.keys(radardata[0]).filter(d => d !== seriesKey);
+	const zKey = 'name'; // for the (fill colors)
+	const seriesColors = ['#f0c', '#0cf', '#fc0'];
+  	const seriesNames = Object.keys(radardata[0]).filter(d => d !== seriesKey); 
 
   	radardata.forEach(d => {
 		seriesNames.forEach(name => {
 			d[name] = +d[name];
 		});
-	});
-	
+	});	//seriesNames = fastball,change,slider,cutter,curve
 </script>
-
-
 
 <svelte:head>
 	<title>About</title>
@@ -87,9 +92,12 @@
 	<LayerCake
 	  padding={{ top: 30, right: 0, bottom: 7, left: 0 }}
 	  x={xKey}
+	  z={zKey}
 	  xDomain={[0, 10]}
 	  xRange={({ height }) => [0, height / 2]}
 	  data = { radardata }
+	  zScale={scaleOrdinal()}
+	  zRange={seriesColors}
 	>
 	<Svg>
 		<AxisRadial/>
