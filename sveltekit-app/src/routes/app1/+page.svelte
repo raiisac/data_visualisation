@@ -6,12 +6,14 @@
 	let chosen_plant = ["Antwerp"];
 	let chosen_product = "EV Car Battery";
 	export let data = []
+
 	// load stuff for radar
 	import { LayerCake, Svg } from 'layercake';
   	import { scaleLinear, scaleOrdinal  } from 'd3-scale';
 	import Radar from '../../components/Radar.svelte';
 	import AxisRadial from '../../components/AxisRadial.svelte';
 	import Legend from "../../components/Legend.svelte";
+	
 	// colors for the legend
 	const values = ["Antwerp", "Birmingham", "Göteborg", "Lyon", "Wrocław"];
 	const ramp = [
@@ -21,7 +23,8 @@
     "#3a95b8",
     "#00001d"];
 	const columns = 1;
-  	// This example loads csv data as json using @rollup/plugin-dsv
+  	
+	// This example loads csv data as json using @rollup/plugin-dsv
   	const radardata = [
 	{
 		name: 'Allison',
@@ -39,12 +42,12 @@
 		cutter: 6,
 		curve: 7
 	}];
-	const seriesKey = 'name';
-  	const xKey = ['fastball', 'change', 'slider', 'cutter', 'curve'];
-	const zKey = 'name'; // for the (fill colors)
-  	const seriesNames = Object.keys(radardata[0]).filter(d => d !== seriesKey); 
+	const seriesKey = 'plant';
+  	const xKey = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	const zKey = 'plant'; // for the (fill colors)
+  	const seriesNames = Object.keys(data.sales[0]).filter(d => d !== seriesKey); 
 
-  	radardata.forEach(d => {
+  	data.sales.forEach(d => {
 		seriesNames.forEach(name => {
 			d[name] = +d[name];
 		});
@@ -101,9 +104,9 @@
 	  padding={{ top: 30, right: 0, bottom: 7, left: 0 }}
 	  x={xKey}
 	  z={zKey}
-	  xDomain={[0, 10]}
+	  xDomain={[0, 20000]}
 	  xRange={({ height }) => [0, height / 2]}
-	  data = { radardata }
+	  data = { data.sales }
 	  zScale={scaleOrdinal()}
 	  zRange={ramp}
 	>
