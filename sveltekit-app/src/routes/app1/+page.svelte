@@ -17,31 +17,13 @@
 	// colors for the legend
 	const values = ["Antwerp", "Birmingham", "Göteborg", "Lyon", "Wrocław"];
 	const ramp = [
-    "#ffffcc",
-    "#b3e1c8",
+    "#d9f0ca",
     "#67c4c5",
     "#3a95b8",
+	"#2c54a0",
     "#00001d"];
 	const columns = 1;
   	
-	// This example loads csv data as json using @rollup/plugin-dsv
-  	const radardata = [
-	{
-		name: 'Allison',
-		fastball: 10,
-		change: 0,
-		slider: 4,
-		cutter: 8,
-		curve: 5
-	},
-	{
-		name: 'Bert',
-		fastball: 8,
-		change: 2,
-		slider: 2,
-		cutter: 6,
-		curve: 7
-	}];
 	const seriesKey = 'plant';
   	const xKey = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 	const zKey = 'plant'; // for the (fill colors)
@@ -123,18 +105,6 @@
 	/>
 </div>
 
-select a column and show it:
-<ul>
-	{#each data.sales as name, i}
-		{#if i <=5} <!-- only show the first elements in the table notice indices start at 0!-->
-			<li>{name.plant_name}</li>
-		{/if}
-	{/each}
-</ul>
-
-
-Show all data as a check:
-{JSON.stringify(data.sales)}
 
 <style>
 	/*
