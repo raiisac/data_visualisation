@@ -2,7 +2,7 @@
 <script>
 	let possible_years = [2022, 2023, 2024]; // webpage with different input options https://svelte.dev/repl/3aca814fe08e49f08a42a7db3baed19a?version=3.29.4
 	let chosen_year = [2022];
-	let possible_plants = ["Antwerp DC", "Birmingham DC", "Göteborg DC", "Lyon DC", "Wrocław DC"];
+	let possible_plants = ["Antwerp", "Birmingham", "Göteborg", "Lyon", "Wrocław"];
 	let chosen_plant = ["Antwerp"];
 	let chosen_product = "EV Car Battery";
 	export let data = []
@@ -11,7 +11,16 @@
   	import { scaleLinear, scaleOrdinal  } from 'd3-scale';
 	import Radar from '../../components/Radar.svelte';
 	import AxisRadial from '../../components/AxisRadial.svelte';
-	
+	import Legend from "../../components/Legend.svelte";
+	// colors for the legend
+	const values = ["Antwerp", "Birmingham", "Göteborg", "Lyon", "Wrocław"];
+	const ramp = [
+    "#ffffcc",
+    "#b3e1c8",
+    "#67c4c5",
+    "#3a95b8",
+    "#00001d"];
+	const columns = 1;
   	// This example loads csv data as json using @rollup/plugin-dsv
   	const radardata = [
 	{
@@ -33,7 +42,6 @@
 	const seriesKey = 'name';
   	const xKey = ['fastball', 'change', 'slider', 'cutter', 'curve'];
 	const zKey = 'name'; // for the (fill colors)
-	const seriesColors = ['#f0c', '#0cf', '#fc0'];
   	const seriesNames = Object.keys(radardata[0]).filter(d => d !== seriesKey); 
 
   	radardata.forEach(d => {
@@ -97,7 +105,7 @@
 	  xRange={({ height }) => [0, height / 2]}
 	  data = { radardata }
 	  zScale={scaleOrdinal()}
-	  zRange={seriesColors}
+	  zRange={ramp}
 	>
 	<Svg>
 		<AxisRadial/>
@@ -105,7 +113,12 @@
 	</Svg>
 </LayerCake>
 </div>
-
+<div style="width:100%; height: 100%; background-color:#eee;">
+	<Legend
+		title="SWE (inches)"
+		{...{ ramp, values, columns}}
+	/>
+</div>
 
 select a column and show it:
 <ul>
