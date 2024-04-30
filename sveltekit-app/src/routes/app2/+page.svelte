@@ -3,17 +3,14 @@
 	<meta name="description" content="About this app" />
 </svelte:head>
 
-<div class="text-column">
-	<h1>About this app</h1>
+<script>
+    export let data = [];
+</script>
 
-	<p>
-		This is a <a href="https://kit.svelte.dev">SvelteKit</a> app. You can make your own by typing the
-		following into your command line and following the prompts:
-	</p>
+<h1>Employees</h1>
 
-	<pre>npm create svelte@latest</pre>
-
-	<p>
-		test
-	</p>
-</div>
+<ul>
+{#each data.plants as employee}
+    <li>{employee.PlantKey} {employee.Plant}</li>
+{/each}
+</ul>

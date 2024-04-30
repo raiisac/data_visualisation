@@ -1,9 +1,16 @@
-import { dev } from '$app/environment';
+import Papa from 'papaparse'
 
-// we don't need any JS on this page, though we'll load
-// it in dev so that we get hot module replacement
-export const csr = dev;
+export const load = async ({ fetch }) => {
 
-// since there's no dynamic data here, we can prerender
-// it so that it gets served as a static asset in production
-export const prerender = true;
+
+    const responsePlants = await fetch('http://localhost:5173/Plants.csv', {
+      headers: {
+        'Content-Type': 'text/csv'
+    }})
+    let csvPlants = await responsePlants.text()
+    let parsedCSVPlants = Papa.parse(csvPlants, {header: true})
+
+    return {
+      plants: parsedCSVPlants.data
+    }
+}
