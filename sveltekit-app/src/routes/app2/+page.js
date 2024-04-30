@@ -10,7 +10,15 @@ export const load = async ({ fetch }) => {
     let csvPlants = await responsePlants.text()
     let parsedCSVPlants = Papa.parse(csvPlants, {header: true})
 
+    const responseCoordinates = await fetch('http://localhost:5173/Coordinates.csv', {
+      headers: {
+        'Content-Type': 'text/csv'
+    }})
+    let csvCoordinates = await responseCoordinates.text()
+    let parsedCSVCoordinates = Papa.parse(csvCoordinates, {header: true})
+
     return {
-      plants: parsedCSVPlants.data
+      plants: parsedCSVPlants.data,
+      coordinates: parsedCSVCoordinates.data
     }
 }
