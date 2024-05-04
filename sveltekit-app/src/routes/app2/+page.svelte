@@ -185,7 +185,9 @@
 
 	path.country {
 		fill: rgb(171, 171, 171);
-		stroke: none;
+		vector-effect: non-scaling-stroke;
+		stroke: rgb(0, 0, 0);
+		stroke-width: 1;
 	}
 
 	path.defaultCustomer {
