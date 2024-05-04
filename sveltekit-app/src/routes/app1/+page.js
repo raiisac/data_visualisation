@@ -11,10 +11,12 @@ export const load = async ({ fetch }) => {
     // Sort the 'sales' data based on 'SalesOrderCreationDate'
     parsedCsvSales.data.sort((a, b) => new Date(a.SalesOrderCreationDate) - new Date(b.SalesOrderCreationDate));
 
+    // Extract unique SalesOrderCreationDate values
+    const uniqueDates = [...new Set(parsedCsvSales.data.map(item => item.SalesOrderCreationDate))];
+
     return {
-      sales: parsedCsvSales.data
+      sales: parsedCsvSales.data,
+      total_dates: uniqueDates
     };
 };
-
-
 
