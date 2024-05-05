@@ -6,7 +6,7 @@
 	import { getContext } from 'svelte';
 	import { line, curveCardinalClosed } from 'd3-shape';
 
-	const { data, width, height, xGet, zGet, zScale, config } = getContext('LayerCake');
+	const { data, width, height, xGet, zGet,  zScale, config } = getContext('LayerCake');
 
 	/**	@type {String} [fill='#f0c'] The radar's fill color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
 	export let fill = undefined
@@ -26,6 +26,7 @@
 	/**	@type {String} [circleFill="#f0c"] Each circle's fill color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
 	export let circleFill = undefined;
 
+	export let dashes = undefined;
 	/**	@type {String} [circleStroke="#fff"] Each circle's stroke color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
 	export let circleStroke = "#fff";
 

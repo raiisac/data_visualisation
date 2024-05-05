@@ -98,9 +98,29 @@
 	</Svg>
 </LayerCake>
 </div>
+
+<div class="chart-container">
+	<LayerCake
+	  padding={{ top: 30, right: 0, bottom: 7, left: 0 }}
+	  x={xKey}
+	  z={zKey}
+	  xDomain={[0, 20000]}
+	  xRange={({ height }) => [0, height / 2]}
+	  data = { data.sales.filter(d => d.year === 2022) }
+	  zScale={scaleOrdinal()}
+	  zRange={ramp}
+	>
+	<Svg>
+		<AxisRadial/>
+		<Radar/>
+	</Svg>
+</LayerCake>
+</div>
+
+
 <div style="width:100%; height: 100%; background-color:#eee;">
 	<Legend
-		title="SWE (inches)"
+		title="Plant"
 		{...{ ramp, values, columns}}
 	/>
 </div>
@@ -114,8 +134,8 @@
 	  expand to fill it.
 	*/
 	.chart-container {
-	  width: 250px;
-	  height: 250px;
+	  width: 1000px;
+	  height: 1000px;
 	  /*border: 10px red;
 	  background-color: coral;
 	  */
