@@ -1,4 +1,5 @@
 <script>
+	import { onMount } from 'svelte';
 	import { json, geoTransform, geoPath } from 'd3';
 
 	// data access
@@ -28,6 +29,9 @@
 	const maxLon = 50.37499;
 	const minLat = 29.486706;
 	const maxLat = 71.154709;
+
+	const minRadius = 5;
+	const maxRadius = 60;
 	
 	$: rescale_lon = function(longitude, givenWidth) {
 		// console.log(width);
@@ -72,9 +76,11 @@
 
 	// code to get coordinates from customerKey
 	let customerKeyToLonLat = new Map();
+	let customerKeyToCountry = new Map();
 	for (let i = 0; i < data.customers.length; i++) {
 		let lonLat = address_to_coordinates_map.get(data.customers[i].CustomerCity + " " + data.customers[i].CustomerCountry);
 		customerKeyToLonLat.set(data.customers[i].CustomerKey, lonLat);
+		customerKeyToCountry.set(data.customers[i].CustomerKey, data.customers[i].CustomerCountry);
 	}
 
 	$: changeScaleFactor = function(increase) {
@@ -101,17 +107,140 @@
 		removeEventListener('mouseup', onMouseUp);
 	}
 
+	function getSaleDataMap(startYear, startMonth, endYear, endMonth, ProductkeyFlag) {
+		/**
+		 * SaleDataMap: Map[
+		 * 					[lon,lat]: Map[
+		 * 									"country": country,
+		 * 									"totalSales": int, 
+		 * 								    ClientName: int
+		 *								  ]
+		 * 				   ]
+		*/
+		let saleDataMap = new Map();
+		let minQuantity = 1000000000000000;
+		let maxQuantity = 0;
+		let minYear = 2025;
+		let maxYear = 2020;
+		console.log(Number(data.sales[0].DeliveryDate.slice(0, 4)));
+		for (let i = 0; i < data.sales.length; i++) {
+			let year = Number(data.sales[i].DeliveryDate.slice(0, 4));
+			let month = Number(data.sales[i].DeliveryDate.slice(5, 7));
+
+			if (year < startYear || year > endYear || (year == startYear && month < startMonth) || (year == endYear && month > endMonth)) {
+				continue;
+			}
+			minYear = Math.min(minYear, year);
+			maxYear = Math.max(maxYear, year);
+			// TODO: ProductkeyFlag filtering
+			let latLon = customerKeyToLonLat.get(data.sales[i].CustomerKey);
+			let quantity = Number(data.sales[i].OrderQuantity);
+			if (saleDataMap.has(latLon)) {
+				let salesQuantity = saleDataMap.get(latLon).get("totalSales");
+				saleDataMap.get(latLon).set("totalSales", salesQuantity + quantity);
+				if (saleDataMap.get(latLon).has(data.sales[i].CustomerKey)) {
+					let customerSalesQuantity = saleDataMap.get(latLon).get(data.sales[i].CustomerKey);
+					saleDataMap.get(latLon).set(data.sales[i].CustomerKey, customerSalesQuantity + quantity)
+				} else {
+					saleDataMap.get(latLon).set(data.sales[i].CustomerKey, quantity)
+				}
+			} else {
+				saleDataMap.set(latLon, new Map());
+				saleDataMap.get(latLon).set("country", customerKeyToCountry.get(data.sales[i].CustomerKey));
+				saleDataMap.get(latLon).set("totalSales", quantity);
+				saleDataMap.get(latLon).set(data.sales[i].CustomerKey, quantity)
+			}
+			minQuantity = Math.min(minQuantity, saleDataMap.get(latLon).get("totalSales"));
+			maxQuantity = Math.max(maxQuantity, saleDataMap.get(latLon).get("totalSales"));
+		}
+		console.log(minQuantity, maxQuantity);
+		console.log(minYear, maxYear);
+		return [saleDataMap, minQuantity, maxQuantity];
+	}
+
+	let getSaleDataMapReturn = getSaleDataMap(2022, 1, 2024, 12, 3);
+	$: filteredSaleDataMap = getSaleDataMapReturn[0];
+	$: filteredSaleDataMapKeys = Array.from(filteredSaleDataMap.keys());
+	$: minValueForRadius = getSaleDataMapReturn[1];
+	$: maxValueForRadius = getSaleDataMapReturn[2];
+	console.log(filteredSaleDataMapKeys);
+
+	$: rescaleRadius = function(value) {
+		let range_min = minRadius;
+		let range_max = maxRadius;
+      	return ((range_max - range_min)*(value-minValueForRadius))/(maxValueForRadius-minValueForRadius) + range_min
+  	}
+
+	onMount(() => {
+        // This code now runs only on the client after the component is mounted
+        const rangeInput = document.querySelectorAll(".range-input input");
+		let progress = document.querySelector(".slider .progress");
+		let fromRangeTextElement = document.querySelector(".from-range-text");
+		let untilRangeTextElement = document.querySelector(".until-range-text");
+
+        rangeInput.forEach(input => {
+            input.addEventListener("input", () => {
+				rangeInput[1].value = Math.max(rangeInput[0].value, rangeInput[1].value);
+				rangeInput[0].value = Math.min(rangeInput[0].value, rangeInput[1].value);
+				
+
+                let minVal = parseInt(rangeInput[0].value);
+                let maxVal = parseInt(rangeInput[1].value);
+
+				let leftPercentage = ((minVal / rangeInput[0].max) * 100) + "%";
+				let rightPercentage = 100 - ((maxVal / rangeInput[0].max) * 100) + "%";
+
+				let minMonth = (minVal % 12) + 1;
+				let minYear = Math.floor(minVal / 12) + 2022;
+				let maxMonth = (maxVal % 12) + 1;
+				let maxYear = Math.floor(maxVal / 12) + 2022;
+
+				fromRangeTextElement.innerHTML = `From:${minMonth}-${minYear}`;
+				untilRangeTextElement.innerHTML = `Until:${maxMonth}-${maxYear}`;
+
+				progress.style.left = leftPercentage;
+				progress.style.right = rightPercentage;
+
+				let getSaleDataMapReturn = getSaleDataMap(minYear, minMonth, maxYear, maxMonth);
+				filteredSaleDataMap = getSaleDataMapReturn[0];
+				minValueForRadius = getSaleDataMapReturn[1];
+				maxValueForRadius = getSaleDataMapReturn[2];
+
+				console.log(filteredSaleDataMap);
+                
+            });
+        });
+	})
+
 </script>
+
+<div class="date-range" style={`border:1px solid black; width: ${usedWidth}px; height: 150px`}>
+	<div class="slider">
+		<div class="progress"></div>
+	</div>
+	<div class="range-input">
+		<input class="period" type="range" min="0" max="35" value="0">
+		<input class="period" type="range" min="0" max="35" value="36">
+	</div>
+	<div class="from-range-text"> 
+		From:1-2022
+	</div>
+	<div class="until-range-text"> 
+		Until:12-2024
+	</div>
+</div>
+
+
+<div id="map settings">
+	<button on:click={changeScaleFactor(-scaleFactorIncrement)}>-</button>
+	<button on:click={changeScaleFactor(scaleFactorIncrement)}>+</button>
+</div>
 
 
 <main bind:clientWidth={width} bind:clientHeight={height}>
+	
 
-	<body>
-	<div id="map settings">
-		<button on:click={changeScaleFactor(-scaleFactorIncrement)}>-</button>
-		<button on:click={changeScaleFactor(scaleFactorIncrement)}>+</button>
-	</div>
-	</body>
+	
 	
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<svg width={usedWidth} height={usedHeight} style="border:1px solid black" on:mousedown={onMouseDown}>
@@ -123,16 +252,17 @@
 			<path class=country d={country.path}/>
 		{/each}
 		
-		{#each data.customers as customer}
+		{#each filteredSaleDataMapKeys as latLonKey}
 
 		<path
-			class={"c" + countryToPlantKeyMap.get(customer.CustomerCountry)}
-			d={"M " + String(rescale_lon(address_to_coordinates_map.get(customer.CustomerCity + " " + customer.CustomerCountry)[0], usedWidth)) + " " + String(rescale_lat(address_to_coordinates_map.get(customer.CustomerCity + " " + customer.CustomerCountry)[1], usedHeight)) + " l 0.0001 0"}
+			class={"c" + countryToPlantKeyMap.get(filteredSaleDataMap.get(latLonKey).get("country"))}
+			d={"M " + String(rescale_lon(latLonKey[0], usedWidth)) + " " + String(rescale_lat(latLonKey[1], usedHeight)) + " l 0.0001 0"}
+			style={`stroke-width: ${rescaleRadius(filteredSaleDataMap.get(latLonKey).get("totalSales"))}`}
 		/>
 
 		<path
 			class="defaultCustomer"
-			d={"M " + String(rescale_lon(address_to_coordinates_map.get(customer.CustomerCity + " " + customer.CustomerCountry)[0], usedWidth)) + " " + String(rescale_lat(address_to_coordinates_map.get(customer.CustomerCity + " " + customer.CustomerCountry)[1], usedHeight)) + " l 0.0001 0"}
+			d={"M " + String(rescale_lon(latLonKey[0], usedWidth)) + " " + String(rescale_lat(latLonKey[1], usedHeight)) + " l 0.0001 0"}
 		/>
 		{/each}
 		
@@ -150,6 +280,7 @@
 		{/each}
 		</g>
 		</g>
+		
 	</svg>
 </main>
 
@@ -174,13 +305,71 @@
 	:root {
 		--plant-radius: 10;
 		--customer-radius: 5;
-		--customer-default-radius: 2;
+		--customer-default-radius: 3.5;
+		--slider-width: 450px;
+		--slider-position-x: 100px;
+		--slider-position-y: 50px;
+		--customer-opacity: 0.4;
+	}
+
+	div.date-range{
+		background: #fff;
+	}
+
+	div.slider {
+		height: 5px;
+		width: var(--slider-width);
+		position: relative;
+		background: #ddd;
+		border-radius: 5px;
+		left: var(--slider-position-x);
+		top: var(--slider-position-y);
+	}
+
+	div.progress {
+		height: 100%;
+		left: 0%;
+		right: 0%;
+		position: absolute;
+		border-radius: 5px;
+		background: #0074e1;
+	}
+
+	.range-input{
+		position: relative;
+		width: var(--slider-width);
+		left: var(--slider-position-x);
+		top: var(--slider-position-y);
+	}
+
+	input[type=range]::-webkit-slider-thumb {
+		pointer-events: all;
+	}
+
+	input[type="range"] {
+		position: absolute;
+		width: 102%;
+		height: 5px;
+		top: -7px;
+		left: -2px;
+		background: none;
+		pointer-events: none;
+		-webkit-appearance: none;
+  		-moz-appearance: none;
 	}
 
 	main {
 		width: 100vw;
 		height: 100vh;
 		overflow: hidden;
+	}
+
+	div {
+		border-radius: 10px;
+	}
+
+	svg {
+		border-radius: 10px;
 	}
 
 	path.country {
@@ -207,7 +396,7 @@
     }
 
 	path.c4 {
-		opacity: 0.25;
+		opacity: var(--customer-opacity);
 		stroke-width: var(--customer-radius);
 		vector-effect: non-scaling-stroke;
 		stroke-linecap: round;
@@ -223,7 +412,7 @@
     }
 
 	path.c5 {
-		opacity: 0.25;
+		opacity: var(--customer-opacity);
 		stroke-width: var(--customer-radius);
 		vector-effect: non-scaling-stroke;
 		stroke-linecap: round;
@@ -239,7 +428,7 @@
     }
 
 	path.c6 {
-		opacity: 0.25;
+		opacity: var(--customer-opacity);
 		stroke-width: var(--customer-radius);
 		vector-effect: non-scaling-stroke;
 		stroke-linecap: round;
@@ -255,7 +444,7 @@
     }
 
 	path.c7 {
-		opacity: 0.25;
+		opacity: var(--customer-opacity);
 		stroke-width: var(--customer-radius);
 		vector-effect: non-scaling-stroke;
 		stroke-linecap: round;
@@ -271,7 +460,7 @@
     }
 
 	path.c8 {
-		opacity: 0.25;
+		opacity: var(--customer-opacity);
 		stroke-width: var(--customer-radius);
 		vector-effect: non-scaling-stroke;
 		stroke-linecap: round;
