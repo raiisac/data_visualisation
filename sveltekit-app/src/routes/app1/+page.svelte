@@ -1,5 +1,9 @@
 <script>
     import SvelteHeatmap from 'svelte-heatmap';
+	import { LayerCake, Svg } from 'layercake'; // for the radar graph
+  	import { scaleLinear, scaleOrdinal  } from 'd3-scale'; // for the radar graph
+	import Radar from '../../components/Radar.svelte'; // for the radar graph
+	import AxisRadial from '../../components/AxisRadial.svelte'; // for the radar graph
 
     export let data = { sales: [] ,  salesradar: [] , total_dates }; // Define the data object
     export let selectedProduct = '1'; // Initialize selected product as Product 1
