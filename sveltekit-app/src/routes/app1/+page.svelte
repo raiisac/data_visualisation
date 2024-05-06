@@ -1301,7 +1301,7 @@
         display: inline-block; /* Display heatmaps inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 200px; /* Adjust as needed */
+        top: 300px; /* Adjust as needed */
         left: 600px; /* Adjust as needed */
     }
 
@@ -1317,7 +1317,7 @@
         display: inline-block; /* Display heatmaps inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 240px; /* Adjust as needed */
+        top: 340px; /* Adjust as needed */
         left: 775px; /* Adjust as needed */
     }
 
@@ -1333,7 +1333,7 @@
         display: inline-block; /* Display heatmaps inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 350px; /* Adjust as needed */
+        top: 450px; /* Adjust as needed */
         left: 900px; /* Adjust as needed */
     }
 
@@ -1349,7 +1349,7 @@
         display: inline-block; /* Display heatmaps inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 500px; /* Adjust as needed */
+        top: 600px; /* Adjust as needed */
         left: 975px; /* Adjust as needed */
     }
 
@@ -1365,7 +1365,7 @@
         display: inline-block; /* Display heatmaps inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 650px; /* Adjust as needed */
+        top: 750px; /* Adjust as needed */
         left: 900px; /* Adjust as needed */
     }
 
@@ -1381,7 +1381,7 @@
         display: inline-block; /* Display heatmaps inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 760px; /* Adjust as needed */
+        top: 860px; /* Adjust as needed */
         left: 775px; /* Adjust as needed */
     }
 
@@ -1397,7 +1397,7 @@
         display: inline-block; /* Display heatmaps inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 800px; /* Adjust as needed */
+        top: 900px; /* Adjust as needed */
         left: 600px; /* Adjust as needed */
     }
 
@@ -1413,7 +1413,7 @@
         display: inline-block; /* Display heatmaps inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 760px; /* Adjust as needed */
+        top: 860px; /* Adjust as needed */
         left: 425px; /* Adjust as needed */
     }
 
@@ -1429,7 +1429,7 @@
         display: inline-block; /* Display heatmaps inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 650px; /* Adjust as needed */
+        top: 750px; /* Adjust as needed */
         left: 300px; /* Adjust as needed */
     }
 
@@ -1445,7 +1445,7 @@
         display: inline-block; /* Display heatmaps inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 500px; /* Adjust as needed */
+        top: 600px; /* Adjust as needed */
         left: 225px; /* Adjust as needed */
     }
 
@@ -1461,7 +1461,7 @@
         display: inline-block; /* Display heatmaps inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 350px; /* Adjust as needed */
+        top: 450px; /* Adjust as needed */
         left: 300px; /* Adjust as needed */
     }
 
@@ -1477,7 +1477,7 @@
         display: inline-block; /* Display heatmaps inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 240px; /* Adjust as needed */
+        top: 340px; /* Adjust as needed */
         left: 425px; /* Adjust as needed */
     }
 
@@ -1492,7 +1492,7 @@
         border-radius: 100px;
         display: grid; /* Use flexbox */
         position: absolute; /* Set position to relative */
-        top: 600px; /* Adjust as needed */
+        top: 700px; /* Adjust as needed */
         left: 0px; /* Adjust as needed */
     }
 
@@ -1505,14 +1505,14 @@
 
 	.radar-fig {
         padding: 0px;
-        width: 350px;
-		height: 350px;
+        width: 400px;
+		height: 400px;
         margin-bottom: 0px;
         display: inline-block; /* Display radar inline */
         margin-right: 0px; /* Add some space between heatmaps */
         position: absolute; /* Set position to relative */
-        top: 350px; /* Adjust as needed */
-        left: 475px; /* Adjust as needed */
+        top: 425px; /* Adjust as needed */
+        left: 425px; /* Adjust as needed */
     }
 
 </style>
