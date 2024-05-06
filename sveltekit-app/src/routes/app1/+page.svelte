@@ -10,6 +10,8 @@
     export let selectedYear = '2022'; // Initialize selected year as 2022
     export let selectedPlantKey = '4'; // Initialize selected plant key as 4
 	
+
+
     function generateData(product, year, plantKey, month) {
         const aggregatedData1 = {}; // Database for Product 1
         const aggregatedData2 = {}; // Database for Product 2
@@ -73,7 +75,6 @@
         return { dates1, quantities1, heatmap1, dates2, quantities2, heatmap2, dates12, quantities12, heatmap12 };
     }
 
-
     function filterArrayByYear(arr, year) {
         // Filter the array by checking if the year of each date matches the provided year
         return arr.filter(item => {
@@ -92,6 +93,29 @@
 			d[name] = +d[name];
 		});
 	});	//seriesNames = fastball,change,slider,cutter,curve
+	
+	// Query results
+	let temp = [];
+	let filteredradardata = [];
+	
+	// For Select Menu
+	$: if (selectedPlantKey) getfiltereddata();//update data when the plant is chosen
+	$: if (selectedProduct ) getfiltereddata();//update data when the product is chosen
+	$: if (selectedYear) getfiltereddata();//update data when the year is chosen
+	//$: console.log(filteredradardata, selectedPlantKey);
+	
+	const getfiltereddata = () => {		
+		if ( selectedProduct === "1") {
+		   temp = data.salesradar.filter(sale => sale.materialkey === 1);
+		} 
+		if ( selectedProduct === "2") {
+		   temp = data.salesradar.filter(sale => sale.materialkey === 2);
+		} 
+		if ( selectedProduct === "12") {
+		   temp = data.salesradar;
+		} 
+		return filteredradardata = temp.filter(sale => sale.year === parseInt(selectedYear) && sale.plantkey  === selectedPlantKey);
+	}	
 	
 </script>
 
@@ -1205,7 +1229,7 @@
 	  x={xKey}
 	  xDomain={[0, 20000]}
 	  xRange={({ height }) => [0, height / 2]}
-	  data = { data.salesradar}
+	  data = {filteredradardata}
 	>
 	<Svg>
 		<AxisRadial/>	
