@@ -4,6 +4,7 @@
   	import { scaleLinear, scaleOrdinal  } from 'd3-scale'; // for the radar graph
 	import Radar from '../../components/Radar.svelte'; // for the radar graph
 	import AxisRadial from '../../components/AxisRadial.svelte'; // for the radar graph
+	import Legend from "../../components/Legend.svelte"; // for the radar graph
 
     export let data = { sales: [] ,  salesradar: [] , total_dates }; // Define the data object
     export let selectedProduct = '1'; // Initialize selected product as Product 1
@@ -87,6 +88,11 @@
 
 	const seriesKey = 'plantkey';
   	const xKey = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	const zKey = 'materialkey'; // for the (fill colors)
+	// colors for the legend
+	const values = ["EV Car Battery", "Home Battery"];
+	const ramp = ["#67c4c5", "#00001d"];
+	const columns = 1;
 	const seriesNames = Object.keys(data.salesradar[0]).filter(d => d !== seriesKey); 
 	data.salesradar.forEach(d => {
 		seriesNames.forEach(name => {
@@ -116,11 +122,31 @@
 		} 
 		return filteredradardata = temp.filter(sale => sale.year === parseInt(selectedYear) && sale.plantkey  === selectedPlantKey);
 	}	
-	
+	//Conditionally hide the legend for the products
+    let legendvisible = false;
+
+    function toggleVissible() {
+		if(selectedProduct === "12"){
+			legendvisible = true;
+		}
+		if(selectedProduct === "1"){
+			legendvisible = false;
+		}
+		if(selectedProduct === "2"){
+			legendvisible = false;
+		}
+    }
+	function hideDiv(elem) {
+		var x = document.getElementById("hideDiv");
+    if(selectedProduct === "12")
+	x.style.visibility = "visible";
+    else
+	x.style.visibility = "hidden";
+}
 </script>
 
 <!-- Dropdown menu to select the product -->
-<select bind:value={selectedProduct}>
+<select bind:value={selectedProduct} on:change={toggleVissible}>
     <option value="1">EV Car Battery</option>
     <option value="2">Home Battery</option>
     <option value="12">Home and Car Battery</option>
@@ -162,6 +188,7 @@
 	Goteburg DC
 	{/if}
 </h1>
+
 
 <div class="legend"></div>
 
@@ -1227,9 +1254,12 @@
     <LayerCake
 	  padding={{ top: 30, right: 0, bottom: 7, left: 0 }}
 	  x={xKey}
+	  z={zKey}
 	  xDomain={[0, 20000]}
 	  xRange={({ height }) => [0, height / 2]}
 	  data = {filteredradardata}
+	  zScale={scaleOrdinal()}
+	  zRange={ramp}
 	>
 	<Svg>
 		<AxisRadial/>	
@@ -1253,6 +1283,15 @@
     <p>Highest amount of orders</p>
 </div>
 
+
+<div id="hideDiv" style="width:100%; height: 100%; background-color:#eee;">
+	{#if legendvisible}
+	<Legend
+		title="Product"
+		{...{ ramp, values, columns}}
+	/>
+	{/if}
+</div>
 
 <style>
     .container-jan {

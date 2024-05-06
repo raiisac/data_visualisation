@@ -6,7 +6,7 @@
 	import { getContext } from 'svelte';
 	import { line, curveCardinalClosed } from 'd3-shape';
 
-	const { data, width, height, xGet, config } = getContext('LayerCake');
+	const { data, width, height, xGet, zGet,  zScale, config } = getContext('LayerCake');
 
 	/**	@type {String} [fill='#f0c'] The radar's fill color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
 	export let fill = undefined
@@ -40,17 +40,6 @@
 		.x((d, i) => d * Math.cos(angleSlice * i - Math.PI / 2))
 		.y((d, i) => d * Math.sin(angleSlice * i - Math.PI / 2));
 
-	/* The non-D3 line generator way. */
-	// $: path = valus => 'M' + values
-	// 	.map(d => {
-	// 		return $rGet(d).map((val, i) => {
-	// 			return [
-	// 				val * Math.cos(angleSlice * i - Math.PI / 2),
-	// 				val * Math.sin(angleSlice * i - Math.PI / 2)
-	// 			].join(',');
-	// 		});
-	// 	})
-	// 	.join('L') + 'z';
 </script>
 
 <g
@@ -62,17 +51,20 @@
 		<path
 			class='path-line'
 			d='{path(xVals)}'
+			stroke="{stroke || $zGet(row)}"
 			stroke-width="{strokeWidth}"
+			fill="{fill || $zGet(row)}"
 			fill-opacity="{fillOpacity}"
 		></path>
 
-		<!-- Plot each dots -->
+		<!-- Plot each dot -->
 		{#each xVals as circleR, i}
 			{@const thisAngleSlice = angleSlice * i - Math.PI / 2}
 			<circle
 				cx={circleR * Math.cos(thisAngleSlice)}
 				cy={circleR * Math.sin(thisAngleSlice)}
 				r="{r}"
+				fill="{circleFill || $zGet(row)}"
 				stroke="{circleStroke}"
 				stroke-width="{circleStrokeWidth}"
 				data-label = {xVals}
