@@ -1,11 +1,11 @@
 <script>
     import SvelteHeatmap from 'svelte-heatmap';
 
-    export let data = { sales: [] , total_dates }; // Define the data object
+    export let data = { sales: [] ,  salesradar: [] , total_dates }; // Define the data object
     export let selectedProduct = '1'; // Initialize selected product as Product 1
     export let selectedYear = '2022'; // Initialize selected year as 2022
     export let selectedPlantKey = '4'; // Initialize selected plant key as 4
-   
+	
     function generateData(product, year, plantKey, month) {
         const aggregatedData1 = {}; // Database for Product 1
         const aggregatedData2 = {}; // Database for Product 2
@@ -105,7 +105,14 @@
     <option value="8">Goteburg DC</option>
 </select>
 
-<h1>Heatmap for {selectedProduct} in {selectedYear}</h1>
+<h1>Heatmap for {#if selectedProduct == "1"}
+	EV Car Batteries 
+	{:else if selectedProduct == "2"} 
+	Home Batteries
+	{:else}
+	EV Car and Home batteries
+	{/if}
+	in {selectedYear}</h1>
 
 <div class="legend"></div>
 
