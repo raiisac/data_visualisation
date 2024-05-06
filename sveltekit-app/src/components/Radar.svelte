@@ -6,7 +6,7 @@
 	import { getContext } from 'svelte';
 	import { line, curveCardinalClosed } from 'd3-shape';
 
-	const { data, width, height, xGet, zGet,  zScale, config } = getContext('LayerCake');
+	const { data, width, height, xGet, config } = getContext('LayerCake');
 
 	/**	@type {String} [fill='#f0c'] The radar's fill color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
 	export let fill = undefined
@@ -26,8 +26,8 @@
 	/**	@type {String} [circleFill="#f0c"] Each circle's fill color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
 	export let circleFill = undefined;
 
-	export let dashes = undefined;
-	/**	@type {String} [circleStroke="#fff"] Each circle's stroke color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
+	//export let dashes = undefined;
+	///**	@type {String} [circleStroke="#fff"] Each circle's stroke color. This is technically optional because it comes with a default value but you'll likely want to replace it with your own color. */
 	export let circleStroke = "#fff";
 
 	/**	@type {Number} [circleStrokeWidth=1] Each circle's stroke width. */
@@ -62,9 +62,7 @@
 		<path
 			class='path-line'
 			d='{path(xVals)}'
-			stroke="{stroke || $zGet(row)}"
 			stroke-width="{strokeWidth}"
-			fill="{fill || $zGet(row)}"
 			fill-opacity="{fillOpacity}"
 		></path>
 
@@ -75,7 +73,6 @@
 				cx={circleR * Math.cos(thisAngleSlice)}
 				cy={circleR * Math.sin(thisAngleSlice)}
 				r="{r}"
-				fill="{circleFill || $zGet(row)}"
 				stroke="{circleStroke}"
 				stroke-width="{circleStrokeWidth}"
 				data-label = {xVals}

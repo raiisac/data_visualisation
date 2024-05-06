@@ -1199,6 +1199,21 @@
     {/if}
 </div>
 
+<div class="radar-fig">
+    <LayerCake
+	  padding={{ top: 30, right: 0, bottom: 7, left: 0 }}
+	  x={xKey}
+	  xDomain={[0, 20000]}
+	  xRange={({ height }) => [0, height / 2]}
+	  data = { data.salesradar}
+	>
+	<Svg>
+		<AxisRadial/>	
+		<Radar/>
+	</Svg>
+	</LayerCake>
+</div>
+
 <!-- Legend for the colors -->
 <div class="legend">
     <p>No orders</p>
@@ -1423,6 +1438,18 @@
         height: 20px;
         margin-bottom: 0px; /* Add spacing between items */
         
+    }
+
+	.radar-fig {
+        padding: 0px;
+        width: 400px;
+		height: 400px;
+        margin-bottom: 0px;
+        display: inline-block; /* Display radar inline */
+        margin-right: 0px; /* Add some space between heatmaps */
+        position: absolute; /* Set position to relative */
+        top: 325px; /* Adjust as needed */
+        left: 450px; /* Adjust as needed */
     }
 
 </style>
