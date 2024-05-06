@@ -14,9 +14,17 @@ export const load = async ({ fetch }) => {
     // Extract unique SalesOrderCreationDate values
     const uniqueDates = [...new Set(parsedCsvSales.data.map(item => item.SalesOrderCreationDate))];
 
+    const responseSalesRadar = await fetch('https://raw.githubusercontent.com/raiisac/data_visualisation/sales-Tamaya/sveltekit-app/static/sales_radar.csv', {
+      headers: {
+        'Content-Type': 'text/csv'
+    }})
+    let csvSalesRadar = await responseSalesRadar.text()
+    let parsedCsvSalesRadar = Papa.parse(csvSalesRadar, {header: true})
+
     return {
       sales: parsedCsvSales.data,
-      total_dates: uniqueDates
+      salesradar: parsedCsvSales.data,
+      total_dates: uniqueDates      
     };
 };
 
