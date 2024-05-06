@@ -1255,7 +1255,7 @@
 	  padding={{ top: 30, right: 0, bottom: 7, left: 0 }}
 	  x={xKey}
 	  z={zKey}
-	  xDomain={[0, 20000]}
+	  xDomain={[0, null]}
 	  xRange={({ height }) => [0, height / 2]}
 	  data = {filteredradardata}
 	  zScale={scaleOrdinal()}

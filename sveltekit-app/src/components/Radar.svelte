@@ -60,7 +60,7 @@
 		<!-- Plot each dot -->
 		{#each xVals as circleR, i}
 			{@const thisAngleSlice = angleSlice * i - Math.PI / 2}
-			<circle
+			<circle                
 				cx={circleR * Math.cos(thisAngleSlice)}
 				cy={circleR * Math.sin(thisAngleSlice)}
 				r="{r}"
@@ -68,7 +68,9 @@
 				stroke="{circleStroke}"
 				stroke-width="{circleStrokeWidth}"
 				data-label = {xVals}
-			></circle>
+			>
+                <title>{Math.round(circleR)}</title>
+            </circle>
 		{/each}
 	{/each}
 </g>
