@@ -23,7 +23,7 @@ export const load = async ({ fetch }) => {
 
     return {
       sales: parsedCsvSales.data,
-      salesradar: parsedCsvSales.data,
+      salesradar: parsedCsvSalesRadar.data,
       total_dates: uniqueDates      
     };
 };

@@ -84,6 +84,15 @@
         });
     }
 
+	const seriesKey = 'plantkey';
+  	const xKey = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	const seriesNames = Object.keys(data.salesradar[0]).filter(d => d !== seriesKey); 
+	data.salesradar.forEach(d => {
+		seriesNames.forEach(name => {
+			d[name] = +d[name];
+		});
+	});	//seriesNames = fastball,change,slider,cutter,curve
+	
 </script>
 
 <!-- Dropdown menu to select the product -->
@@ -116,7 +125,19 @@
 	{:else}
 	EV Car and Home batteries
 	{/if}
-	in {selectedYear}</h1>
+	in {selectedYear}
+	for {#if selectedPlantKey== "4"}
+	Antwerp DC
+	{:else if selectedPlantKey == "5"}
+	Wroclaw DC
+	{:else if selectedPlantKey == "6"}
+	Lyon DC
+	{:else if selectedPlantKey == "7"}
+	Birmingham DC
+	{:else }
+	Goteburg DC
+	{/if}
+</h1>
 
 <div class="legend"></div>
 
