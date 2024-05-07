@@ -145,6 +145,8 @@
 }
 </script>
 
+Suncharge's yearly sales are visualised on a radar chart. The calendars around it show the daily total number of sales (the first day of the week is Sunday). Please select a product (or both), a year, and a plant to visualise the relevant sales.
+
 <!-- Dropdown menu to select the product -->
 <select bind:value={selectedProduct} on:change={toggleVissible}>
     <option value="1">EV Car Battery</option>
