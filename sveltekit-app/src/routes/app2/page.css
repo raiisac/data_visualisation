@@ -1,25 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+* {
+    font-family: 'Poppins', sans-serif;
+  }
+
 :root {
     --plant-radius: 10;
     --customer-radius: 5;
     --customer-default-radius: 3.5;
     --slider-width: 450px;
-    --slider-position-x: 100px;
-    --slider-position-y: 50px;
+    --slider-position-x: 250px;
+    --slider-position-y: 77%;
+    --progress-position-x: 255px;
+    --progress-position-y: 70%;
     --customer-opacity: 0.4;
 }
 
-div.date-range{
-    background: #fff;
+div.text {
+    position: absolute;
+    border: 1px solid black;
+}
+
+div.filter-sub-div {
+    position: absolute;
+    border:1px solid black;
 }
 
 div.slider {
     height: 5px;
     width: var(--slider-width);
-    position: relative;
+    position: absolute;
     background: #ddd;
     border-radius: 5px;
-    left: var(--slider-position-x);
-    top: var(--slider-position-y);
+    left: var(--progress-position-x);
+    top: var(--progress-position-y);
 }
 
 div.progress {
@@ -32,7 +46,7 @@ div.progress {
 }
 
 .range-input{
-    position: relative;
+    position: absolute;
     width: var(--slider-width);
     left: var(--slider-position-x);
     top: var(--slider-position-y);

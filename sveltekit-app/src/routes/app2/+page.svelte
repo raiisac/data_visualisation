@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { json, geoTransform, geoPath } from 'd3';
+	import * as htmlVars from './htmlVars';
 	
 	// data access
 	export let data = [];
@@ -11,7 +12,9 @@
 	$: usedWidth = width - 100;
 	$: usedHeight = height - 50;
 	$: scaleFactor = 1;
-	let scaleFactorIncrement = 0.2;
+	const minScaleFactor = 1;
+	const maxScaleFactor = 5;
+	let scaleFactorIncrement = 0.4;
 	$: translateX = 100;
 	$: translateY = 0;
 
@@ -84,7 +87,7 @@
 	}
 
 	$: changeScaleFactor = function(increase) {
-		scaleFactor = Math.min(4, Math.max(1, scaleFactor + increase));
+		scaleFactor = Math.min(maxScaleFactor, Math.max(minScaleFactor, scaleFactor + increase));
 		console.log(scaleFactor);
 	}
 
@@ -195,8 +198,8 @@
 				let maxMonth = (maxVal % 12) + 1;
 				let maxYear = Math.floor(maxVal / 12) + 2022;
 
-				fromRangeTextElement.innerHTML = `From:${minMonth}-${minYear}`;
-				untilRangeTextElement.innerHTML = `Until:${maxMonth}-${maxYear}`;
+				fromRangeTextElement.innerHTML = `From: ${minMonth}-${minYear}`;
+				untilRangeTextElement.innerHTML = `Until: ${maxMonth}-${maxYear}`;
 
 				progress.style.left = leftPercentage;
 				progress.style.right = rightPercentage;
@@ -222,21 +225,51 @@
     <link rel="stylesheet" href="./src/routes/app2/page.css">
 </svelte:head>
 
+<div class="filter-div" style={`border:1px solid black; position: relative; width: ${usedWidth}px; height: 150px`}>
+	
+	<div class="filter-sub-div" id="plant-selector" style="height: 30px; width: 100%;">
+		<div class="text" style={`left: ${htmlVars.startXPositionForFilteringText}px; top: ${htmlVars.percentageForDivText}%`}>Plants: </div>
+		<input type="checkbox" id="Plant4" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Antwerp DC</div>
+		<input type="checkbox" id="Plant5" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForDivText}%`}>Wrocław DC</div>
+		<input type="checkbox" id="Plant6" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForDivText}%`}>Lyon DC</div>
+		<input type="checkbox" id="Plant7" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 3}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 3}px; top: ${htmlVars.percentageForDivText}%`}>Birmingham DC</div>
+		<input type="checkbox" id="Plant8" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 4}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 4}px; top: ${htmlVars.percentageForDivText}%`}>Göteborg DC</div>
+	</div>
 
-<div class="date-range" style={`border:1px solid black; width: ${usedWidth}px; height: 150px`}>
-	<div class="slider">
-		<div class="progress"></div>
+	<div class="filter-sub-div" id="product-selector" style="height: 30px; width: 100%; top: 30px">
+		<div class="text" style={`left: ${htmlVars.startXPositionForFilteringText}px; top: ${htmlVars.percentageForDivText}%`}>Products: </div>
+		<input type="checkbox" id="Plant4" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Car Battery</div>
+		<input type="checkbox" id="Plant5" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForDivText}%`}>Home Battery</div>
 	</div>
-	<div class="range-input">
-		<input class="period" type="range" min="0" max="35" value="0">
-		<input class="period" type="range" min="0" max="35" value="36">
+
+
+
+
+	<div class="filter-sub-div" id="period-selector" style="height: 60px; width: 100%; top: 60px">
+		<div class="text" style={`position: absolute; left: ${htmlVars.startXPositionForFilteringText}px; top: ${htmlVars.percentageForDivText}%`}>Period: </div>
+		<div class="slider">
+			<div class="progress"></div>
+		</div>
+		<div class="range-input">
+			<input class="period" type="range" min="0" max="35" value="0">
+			<input class="period" type="range" min="0" max="35" value="36">
+		</div>
+		<div class="from-range-text" style={`position: absolute; left: ${htmlVars.startXPositionForFromText}`}>
+			From: 1-2022
+		</div>
+		<div class="until-range-text" style={`position: absolute; left: ${htmlVars.startXPositionForUntilText}`}> 
+			Until: 12-2024
+		</div>
 	</div>
-	<div class="from-range-text"> 
-		From:1-2022
-	</div>
-	<div class="until-range-text"> 
-		Until:12-2024
-	</div>
+
+
 </div>
 
 
