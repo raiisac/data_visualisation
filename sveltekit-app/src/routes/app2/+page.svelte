@@ -214,6 +214,15 @@
 
 </script>
 
+
+<!-- Components -->
+
+<!-- Load the custome style -->
+<svelte:head>
+    <link rel="stylesheet" href="./src/routes/app2/page.css">
+</svelte:head>
+
+
 <div class="date-range" style={`border:1px solid black; width: ${usedWidth}px; height: 150px`}>
 	<div class="slider">
 		<div class="progress"></div>
@@ -238,10 +247,6 @@
 
 
 <main bind:clientWidth={width} bind:clientHeight={height}>
-	
-
-	
-	
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<svg width={usedWidth} height={usedHeight} style="border:1px solid black" on:mousedown={onMouseDown}>
 		<g transform={"scale (" + String(scaleFactor) + ")"}>
@@ -285,8 +290,6 @@
 </main>
 
 
-
-
 <ul>
 	{#each data.plants as plant}
 		<li> {plant.PlantKey} {plant.Plant}</li>
@@ -299,171 +302,3 @@
 		<b> {plant.PlantCountry} </b>
 	{/each}
 </ul>
-
-
-<style>
-	:root {
-		--plant-radius: 10;
-		--customer-radius: 5;
-		--customer-default-radius: 3.5;
-		--slider-width: 450px;
-		--slider-position-x: 100px;
-		--slider-position-y: 50px;
-		--customer-opacity: 0.4;
-	}
-
-	div.date-range{
-		background: #fff;
-	}
-
-	div.slider {
-		height: 5px;
-		width: var(--slider-width);
-		position: relative;
-		background: #ddd;
-		border-radius: 5px;
-		left: var(--slider-position-x);
-		top: var(--slider-position-y);
-	}
-
-	div.progress {
-		height: 100%;
-		left: 0%;
-		right: 0%;
-		position: absolute;
-		border-radius: 5px;
-		background: #0074e1;
-	}
-
-	.range-input{
-		position: relative;
-		width: var(--slider-width);
-		left: var(--slider-position-x);
-		top: var(--slider-position-y);
-	}
-
-	input[type=range]::-webkit-slider-thumb {
-		pointer-events: all;
-	}
-
-	input[type="range"] {
-		position: absolute;
-		width: 102%;
-		height: 5px;
-		top: -7px;
-		left: -2px;
-		background: none;
-		pointer-events: none;
-		-webkit-appearance: none;
-  		-moz-appearance: none;
-	}
-
-	main {
-		width: 100vw;
-		height: 100vh;
-		overflow: hidden;
-	}
-
-	div {
-		border-radius: 10px;
-	}
-
-	svg {
-		border-radius: 10px;
-	}
-
-	path.country {
-		fill: rgb(171, 171, 171);
-		vector-effect: non-scaling-stroke;
-		stroke: rgb(0, 0, 0);
-		stroke-width: 1;
-	}
-
-	path.defaultCustomer {
-		opacity: 1;
-		stroke-width: var(--customer-default-radius);
-		vector-effect: non-scaling-stroke;
-		stroke-linecap: round;
-		stroke: black;
-    }
-
-	path.p4 {
-		opacity: 1;
-		stroke-width: var(--plant-radius);
-		vector-effect: non-scaling-stroke;
-		stroke-linecap: round;
-		stroke: rgb(0, 78, 166);
-    }
-
-	path.c4 {
-		opacity: var(--customer-opacity);
-		stroke-width: var(--customer-radius);
-		vector-effect: non-scaling-stroke;
-		stroke-linecap: round;
-		stroke: rgb(0, 119, 255);
-	}
-
-	path.p5 {
-		opacity: 1;
-		stroke-width: var(--plant-radius);
-		vector-effect: non-scaling-stroke;
-		stroke-linecap: round;
-		stroke: rgb(180, 0, 187);
-    }
-
-	path.c5 {
-		opacity: var(--customer-opacity);
-		stroke-width: var(--customer-radius);
-		vector-effect: non-scaling-stroke;
-		stroke-linecap: round;
-		stroke: rgb(247, 0, 255);
-	}
-
-	path.p6 {
-		opacity: 1;
-		stroke-width: var(--plant-radius);
-		vector-effect: non-scaling-stroke;
-		stroke-linecap: round;
-		stroke: rgb(166, 0, 0);
-    }
-
-	path.c6 {
-		opacity: var(--customer-opacity);
-		stroke-width: var(--customer-radius);
-		vector-effect: non-scaling-stroke;
-		stroke-linecap: round;
-		stroke: rgb(255, 0, 0);
-	}
-
-	path.p7 {
-		opacity: 1;
-		stroke-width: var(--plant-radius);
-		vector-effect: non-scaling-stroke;
-		stroke-linecap: round;
-		stroke: rgb(0, 94, 0);
-    }
-
-	path.c7 {
-		opacity: var(--customer-opacity);
-		stroke-width: var(--customer-radius);
-		vector-effect: non-scaling-stroke;
-		stroke-linecap: round;
-		stroke: rgb(0, 120, 0);
-	}
-
-	path.p8 {
-		opacity: 1;
-		stroke-width: var(--plant-radius);
-		vector-effect: non-scaling-stroke;
-		stroke-linecap: round;
-		stroke: rgb(177, 71, 0);
-    }
-
-	path.c8 {
-		opacity: var(--customer-opacity);
-		stroke-width: var(--customer-radius);
-		vector-effect: non-scaling-stroke;
-		stroke-linecap: round;
-		stroke: rgb(251, 100, 0);
-	}
-</style>
