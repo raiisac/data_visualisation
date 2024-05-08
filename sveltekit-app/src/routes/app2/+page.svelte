@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import { json, geoTransform, geoPath } from 'd3';
-
+	
 	// data access
 	export let data = [];
 
