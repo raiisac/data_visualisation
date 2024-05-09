@@ -6,7 +6,6 @@
 
 :root {
     --plant-radius: 10;
-    --customer-radius: 5;
     --customer-default-radius: 4;
     --slider-width: 450px;
     --slider-position-x: 250px;
@@ -14,6 +13,9 @@
     --progress-position-x: 255px;
     --progress-position-y: 63%;
     --customer-opacity: 0.3;
+    --analysis-text-left: 7%;
+    --analysis-text-right: 7%;
+    --analysis-text-top: 10%;
 }
 
 div.text {
@@ -37,6 +39,32 @@ div.filter-sub-div-2 {
     position: absolute;
     border-radius: 0px;
     background-color: #7fc1ff;
+}
+
+div.analysis-sub-div-1 {
+    position: absolute;
+    border-radius: 0px;
+    background-color: #bbdeff;
+}
+
+div.analysis-sub-sub-div-1 {
+    position: absolute;
+    left: var(--analysis-text-left);
+    right: var(--analysis-text-right);
+    top: var(--analysis-text-top);
+}
+
+div.analysis-sub-div-2 {
+    position: absolute;
+    border-radius: 0px;
+    background-color: #7fc1ff;
+}
+
+div.analysis-sub-sub-div-2 {
+    position: absolute;
+    left: var(--analysis-text-left);
+    right: var(--analysis-text-right);
+    top: var(--analysis-text-top);
 }
 
 div.slider {
@@ -121,7 +149,6 @@ path.p4 {
 
 path.c4 {
     opacity: var(--customer-opacity);
-    stroke-width: var(--customer-radius);
     vector-effect: non-scaling-stroke;
     stroke-linecap: round;
     stroke: rgb(0, 119, 255);
@@ -137,7 +164,6 @@ path.p5 {
 
 path.c5 {
     opacity: var(--customer-opacity);
-    stroke-width: var(--customer-radius);
     vector-effect: non-scaling-stroke;
     stroke-linecap: round;
     stroke: rgb(247, 0, 255);
@@ -153,7 +179,6 @@ path.p6 {
 
 path.c6 {
     opacity: var(--customer-opacity);
-    stroke-width: var(--customer-radius);
     vector-effect: non-scaling-stroke;
     stroke-linecap: round;
     stroke: rgb(255, 0, 0);
@@ -169,7 +194,6 @@ path.p7 {
 
 path.c7 {
     opacity: var(--customer-opacity);
-    stroke-width: var(--customer-radius);
     vector-effect: non-scaling-stroke;
     stroke-linecap: round;
     stroke: rgb(0, 120, 0);
@@ -185,7 +209,6 @@ path.p8 {
 
 path.c8 {
     opacity: var(--customer-opacity);
-    stroke-width: var(--customer-radius);
     vector-effect: non-scaling-stroke;
     stroke-linecap: round;
     stroke: rgb(251, 100, 0);

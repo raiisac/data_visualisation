@@ -18,7 +18,7 @@
 	const maxScaleFactor = 7;
 	let scaleFactorIncrement = 0.5;
 	$: translateX = 100;
-	$: translateY = 0;
+	$: translateY = 50;
 
 	$: originTranslateX = 0;
 	$: originTranslateY = 0;
@@ -34,11 +34,22 @@
 	$: selectedProductsMask = 3;
 	selectedProductsMask = 3;
 
+	// radius selection for sales
+	$: salesMinMaxSelector = "totalSales";
+	salesMinMaxSelector = "totalSales";
+
 	// period filtering
 	$: minMonth = 1;
 	$: minYear = 2022;
 	$: maxMonth = 12;
 	$: maxYear = 2024;
+
+
+	// Variables for data analysis text
+	$: numberOfCustomers = 0;
+	$: numberOfCities = 0;
+	$: numberOfCarBatteries = 0;
+	$: numberOfHomeBatteries = 0;
 
 	let geojsonPath = "http://localhost:5173/europe.geojson"
 	let geojson;
@@ -130,13 +141,18 @@
 		 * SaleDataMap: Map[
 		 * 					[lon,lat]: Map[
 		 * 									"country": country,
-		 * 									"totalSales": int, 
+		 * 									"totalSales": int,
+		 * 									"maxSales": int,
 		 * 								    ClientName: int
 		 *								  ]
 		 * 				   ]
 		*/
 		let saleDataMap = new Map();
-		let minQuantity = 1000000000000000;
+		let nbCities = 0;
+		let nbCustomers = 0;
+		let nbCarBatteries = 0;
+		let nbHomeBatteries = 0;
+		let minMaxSelector = "totalSales";
 		let maxQuantity = 0;
 		for (let i = 0; i < data.sales.length; i++) {
 			let year = Number(data.sales[i].DeliveryDate.slice(0, 4));
@@ -155,7 +171,11 @@
 			if ((productFlag & selectedProductsMask) === 0) {
 				continue;
 			}
-			// TODO: ProductkeyFlag filtering
+			if (productKey == 1) {
+				nbCarBatteries += Number(data.sales[i].OrderQuantity);
+			} else {
+				nbHomeBatteries += Number(data.sales[i].OrderQuantity);
+			}
 			let latLon = customerKeyToLonLat.get(data.sales[i].CustomerKey);
 			let quantity = Number(data.sales[i].OrderQuantity);
 			if (saleDataMap.has(latLon)) {
@@ -163,21 +183,32 @@
 				saleDataMap.get(latLon).set("totalSales", salesQuantity + quantity);
 				if (saleDataMap.get(latLon).has(data.sales[i].CustomerKey)) {
 					let customerSalesQuantity = saleDataMap.get(latLon).get(data.sales[i].CustomerKey);
-					saleDataMap.get(latLon).set(data.sales[i].CustomerKey, customerSalesQuantity + quantity)
+					saleDataMap.get(latLon).set(data.sales[i].CustomerKey, customerSalesQuantity + quantity);
 				} else {
-					saleDataMap.get(latLon).set(data.sales[i].CustomerKey, quantity)
+					nbCustomers += 1;
+					saleDataMap.get(latLon).set(data.sales[i].CustomerKey, quantity);
 				}
 			} else {
+				nbCities += 1;
+				nbCustomers += 1;
 				saleDataMap.set(latLon, new Map());
 				saleDataMap.get(latLon).set("country", customerKeyToCountry.get(data.sales[i].CustomerKey));
 				saleDataMap.get(latLon).set("totalSales", quantity);
-				saleDataMap.get(latLon).set(data.sales[i].CustomerKey, quantity)
+				saleDataMap.get(latLon).set(data.sales[i].CustomerKey, quantity);
 			}
-			minQuantity = Math.min(minQuantity, saleDataMap.get(latLon).get("totalSales"));
-			maxQuantity = Math.max(maxQuantity, saleDataMap.get(latLon).get("totalSales"));
+			maxQuantity = Math.max(maxQuantity, saleDataMap.get(latLon).get(minMaxSelector));
+		}
+
+		let minQuantity = 1000000000000000;
+		for (const lonLatKey of Array.from(saleDataMap.keys())) {
+			minQuantity = Math.min(minQuantity, saleDataMap.get(lonLatKey).get(minMaxSelector));
 		}
 		console.log(minQuantity, maxQuantity);
-		return [saleDataMap, minQuantity, maxQuantity];
+
+		let extraDataMap = new Map([["minQuantity", minQuantity], ["maxQuantity", maxQuantity], 
+									["nbCustomers", nbCustomers], ["nbCities", nbCities], ["nbCarBatteries", nbCarBatteries],
+									["nbHomeBatteries", nbHomeBatteries]])
+		return [saleDataMap, extraDataMap];
 	}
 
 	console.log("selected plants mask outside");
@@ -185,9 +216,8 @@
 	let getSaleDataMapReturn = getSaleDataMap();
 	$: filteredSaleDataMap = getSaleDataMapReturn[0];
 	$: filteredSaleDataMapKeys = Array.from(filteredSaleDataMap.keys());
-	$: minValueForRadius = getSaleDataMapReturn[1];
-	$: maxValueForRadius = getSaleDataMapReturn[2];
-	console.log(filteredSaleDataMap);
+	$: minValueForRadius = getSaleDataMapReturn[1].get("minQuantity");
+	$: maxValueForRadius = getSaleDataMapReturn[1].get("maxQuantity");
 
 
 	function refreshVariablesAfterFilterChange() {
@@ -195,9 +225,14 @@
 		let getSaleDataMapReturn = getSaleDataMap();
 		filteredSaleDataMap = getSaleDataMapReturn[0];
 		filteredSaleDataMapKeys = Array.from(filteredSaleDataMap.keys());
-		minValueForRadius = getSaleDataMapReturn[1];
-		maxValueForRadius = getSaleDataMapReturn[2];
+		minValueForRadius = getSaleDataMapReturn[1].get("minQuantity");
+		maxValueForRadius = getSaleDataMapReturn[1].get("maxQuantity");
+		numberOfCustomers = getSaleDataMapReturn[1].get("nbCustomers");
+		numberOfCities = getSaleDataMapReturn[1].get("nbCities");
+		numberOfCarBatteries = getSaleDataMapReturn[1].get("nbCarBatteries");
+		numberOfHomeBatteries = getSaleDataMapReturn[1].get("nbHomeBatteries");
 		console.log(filteredSaleDataMap);
+		setAnalysisText();
 	}
 
 
@@ -207,6 +242,27 @@
       	return ((range_max - range_min)*(value-minValueForRadius))/(maxValueForRadius-minValueForRadius) + range_min
   	}
 
+	const monthIndexToMonthMap = new Map([[1, "January"], [2, "February"], [3, "March"], [4, "April"],
+											[5, "May"], [6, "June"], [7, "July"], [8, "August"],
+											[9, "September"], [10, "Octobre"], [11, "November"], [12, "December"],]);
+
+	function setAnalysisText() {
+		let periodText = document.getElementById("periodText");
+		periodText.innerHTML = `The shown data is from the period between <strong>${monthIndexToMonthMap.get(minMonth)} ${minYear}</strong> until <strong>${monthIndexToMonthMap.get(maxMonth)} ${maxYear}</strong>.`;
+		let customerText = document.getElementById("customerText");
+		customerText.innerHTML = `There are <strong>${numberOfCustomers} different customers</strong> in <strong>${numberOfCities} different cities</strong>.`;
+		let productText = document.getElementById("productText");
+		if (selectedProductsMask == 3) {
+			productText.innerHTML = `There were <strong>${(numberOfCarBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} car batteries</strong> and <strong>${(numberOfHomeBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} home batteries</strong> sold.`
+		} else if (selectedProductsMask == 1) {
+			productText.innerHTML = `There were <strong>${(numberOfCarBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} car batteries</strong> sold.`
+		} else if (selectedProductsMask == 2) {
+			productText.innerHTML = `There were <strong>${(numberOfHomeBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} home batteries</strong> sold.`
+		} else {
+			productText.innerHTML = `There are <strong>no</strong> products selected`;
+		}
+	}
+
 	onMount(() => {
         // This code now runs only on the client after the component is mounted
         const rangeInput = document.querySelectorAll(".range-input input");
@@ -215,8 +271,11 @@
 		let untilRangeTextElement = document.querySelector(".until-range-text");
 		let plantCheckBoxes = document.querySelectorAll("#plant-selector input[type='checkbox']");
 		let productCheckBoxes = document.querySelectorAll("#product-selector input[type='checkbox']");
-		console.log(productCheckBoxes)
+		let radiusSelectorCheckBoxes = document.querySelectorAll("#radius-selector input[type='checkbox']");
 
+		// set initial analysis text
+		refreshVariablesAfterFilterChange();
+		setAnalysisText();
 		
 
 		// code for period range
@@ -276,6 +335,29 @@
 				console.log((selectedProductsMask).toString(2));
 			});
 		});
+
+		// code for plant selector
+		radiusSelectorCheckBoxes.forEach(input => {
+            input.addEventListener("change", () => {
+				if (salesMinMaxSelector == "totalSales") {
+					if (!radiusSelectorCheckBoxes[1].checked) {
+						radiusSelectorCheckBoxes[0].checked = true;
+					} else {
+						radiusSelectorCheckBoxes[0].checked = false;
+						salesMinMaxSelector = "maxSales";
+					}
+				} else {
+					if (!radiusSelectorCheckBoxes[0].checked) {
+						radiusSelectorCheckBoxes[1].checked = true;
+					} else {
+						radiusSelectorCheckBoxes[1].checked = false;
+						salesMinMaxSelector = "totalSales";
+					}
+				}
+				console.log(salesMinMaxSelector);
+				refreshVariablesAfterFilterChange();
+			});
+		});
 	})
 
 </script>
@@ -290,7 +372,7 @@
 
 <div class="filter-div" style={`border:1px solid black; position: relative; width: ${usedWidth}px; height: 220px; overflow: hidden;`}>
 	<div class="filter-sub-div-0" id="Header" style="height: 40px; width: 100%; top: 0px; border-bottom: 1px solid black; box-sizing: border-box;">
-		<h2 style="position: absolute; top: -18px; left: 10px">Data filtering</h2>
+		<h2 style="position: absolute; top: -18px; left: 10px">Data Filtering</h2>
 	</div>
 	
 	<div class="filter-sub-div-1" id="plant-selector" style="height: 30px; width: 100%; top: 40px">
@@ -346,9 +428,9 @@
 	<div class="filter-sub-div-1" id="radius-selector" style="height: 30px; width: 100%; top: 190px">
 		<div class="text" style={`right: ${700}px; top: ${htmlVars.percentageForDivText}%;`}>Radius of city based on: </div>
 		<input type="checkbox" id="Sales" checked style={`position: absolute; left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
-		<div class="text" style={`left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Sum of sales to customers in city</div>
-		<input type="checkbox" id="Delay" style={`position: absolute; left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForCheckbox}%`}>
-		<div class="text" style={`left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForDivText}%`}>Max sales to customer in city</div>
+		<div class="text" style={`left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Sum of the sales to customers in the city</div>
+		<input type="checkbox" id="Delay" style={`position: absolute; left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 2.35}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 2.35}px; top: ${htmlVars.percentageForDivText}%`}>Max sales to a customer in the city</div>
 	</div>
 </div>
 
@@ -391,10 +473,6 @@
 			
 	
 			{#each data.plants as plant}
-			<circle	class={"p" + plant.PlantKey}
-					cx={rescale_lon(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[0], usedWidth)} 
-					cy={rescale_lat(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[1], usedHeight)} 
-					/>
 			<path
 			class={"p" + plant.PlantKey}
 			d={"M " + String(rescale_lon(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[0], usedWidth)) + " " + String(rescale_lat(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[1], usedHeight)) + " l 0.0001 0"}
@@ -406,3 +484,32 @@
 		</svg>
 	</div>
 </main>
+
+<div class="analysis-div" style={`border:1px solid black; position: absolute; width: 400px; height: 707px; overflow: hidden; left: 915px; top: 8px;`}>
+	<div class="filter-sub-div-0" id="Header" style="height: 40px; width: 100%; top: 0px; border-bottom: 1px solid black; box-sizing: border-box;">
+		<h2 style="position: absolute; top: -18px; left: 10px">Data Analysis</h2>
+	</div>
+
+	<div class="analysis-sub-div-1" id="periodTextDiv" style="height: 90px; width: 100%; top: 40px">
+		<div class="analysis-sub-sub-div-1" id="periodText" style=""></div>
+	</div>
+
+	<div class="analysis-sub-div-2" id="customerTextDiv" style="height: 75px; width: 100%; top: 130px">
+		<div class="analysis-sub-sub-div-2" id="customerText" style=""></div>
+	</div>
+
+	<div class="analysis-sub-div-1" id="productTextDiv" style="height: 75px; width: 100%; top: 205px">
+		<div class="analysis-sub-sub-div-1" id="productText" style=""></div>
+	</div>
+
+	<div class="analysis-sub-div-2" id="radiusTextDiv" style="height: 150px; width: 100%; top: 280px">
+		<div class="max-radius-text" id="radiusText" style=""></div>
+		<svg width=100% height=100%>
+			<path d={"M 300 50 l0.0001 0"} stroke="black" style={`stroke-width: ${maxRadius}; stroke-linecap: round; opacity: 0.3;`}	/>
+			<path d={"M 300 50 l0.0001 0"} stroke="black" style={`stroke-width: ${4}; stroke-linecap: round;`}	/>
+		</svg>
+		
+	</div>
+
+
+</div>
