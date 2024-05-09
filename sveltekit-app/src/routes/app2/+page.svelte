@@ -13,10 +13,10 @@
 	let height = 100;
 	$: usedWidth = 900;
 	$: usedHeight = height - 50;
-	$: scaleFactor = 1;
-	const minScaleFactor = 1;
-	const maxScaleFactor = 5;
-	let scaleFactorIncrement = 0.4;
+	$: scaleFactor = 0.75;
+	const minScaleFactor = 0.75;
+	const maxScaleFactor = 7;
+	let scaleFactorIncrement = 0.5;
 	$: translateX = 100;
 	$: translateY = 0;
 
@@ -49,7 +49,7 @@
 	const minLat = 29.486706;
 	const maxLat = 71.154709;
 
-	const minRadius = 5;
+	const minRadius = 7;
 	const maxRadius = 60;
 	
 	$: rescale_lon = function(longitude, givenWidth) {
@@ -375,13 +375,14 @@
 			{/each}
 			
 			{#each filteredSaleDataMapKeys as latLonKey}
-	
 			<path
 				class={"c" + countryToPlantKeyMap.get(filteredSaleDataMap.get(latLonKey).get("country"))}
 				d={"M " + String(rescale_lon(latLonKey[0], usedWidth)) + " " + String(rescale_lat(latLonKey[1], usedHeight)) + " l 0.0001 0"}
 				style={`stroke-width: ${rescaleRadius(filteredSaleDataMap.get(latLonKey).get("totalSales"))}`}
 			/>
-	
+			{/each}
+			
+			{#each filteredSaleDataMapKeys as latLonKey}
 			<path
 				class="defaultCustomer"
 				d={"M " + String(rescale_lon(latLonKey[0], usedWidth)) + " " + String(rescale_lat(latLonKey[1], usedHeight)) + " l 0.0001 0"}
@@ -390,7 +391,6 @@
 			
 	
 			{#each data.plants as plant}
-			
 			<circle	class={"p" + plant.PlantKey}
 					cx={rescale_lon(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[0], usedWidth)} 
 					cy={rescale_lat(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[1], usedHeight)} 

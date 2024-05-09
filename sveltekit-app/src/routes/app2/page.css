@@ -7,13 +7,13 @@
 :root {
     --plant-radius: 10;
     --customer-radius: 5;
-    --customer-default-radius: 3.5;
+    --customer-default-radius: 4;
     --slider-width: 450px;
     --slider-position-x: 250px;
     --slider-position-y: 70%;
     --progress-position-x: 255px;
     --progress-position-y: 63%;
-    --customer-opacity: 0.4;
+    --customer-opacity: 0.3;
 }
 
 div.text {
