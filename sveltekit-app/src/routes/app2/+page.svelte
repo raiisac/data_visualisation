@@ -1,4 +1,6 @@
 <script>
+// @ts-nocheck
+
 	import { onMount } from 'svelte';
 	import { json, geoTransform, geoPath } from 'd3';
 	import * as htmlVars from './htmlVars';
@@ -23,6 +25,20 @@
 	$: originXMouseDown = 0;
 	$: originYMouseDown = 0;
 
+	// filter data
+	// plant filtering
+	$: selectedPlantsMask = 31;
+	selectedPlantsMask = 31;
+
+	// product filtering
+	$: selectedProductsMask = 3;
+	selectedProductsMask = 3;
+
+	// period filtering
+	$: minMonth = 1;
+	$: minYear = 2022;
+	$: maxMonth = 12;
+	$: maxYear = 2024;
 
 	let geojsonPath = "http://localhost:5173/europe.geojson"
 	let geojson;
@@ -69,7 +85,6 @@
 	for (let i = 0; i < data.coordinates.length; i++) {
 		address_to_coordinates_map.set(data.coordinates[i].address, [data.coordinates[i].longitude, data.coordinates[i].latitude]);
 	}
-	let address_to_coordinates_map_keys = Array.from(address_to_coordinates_map.keys());
 
 	// code to get country to plant map
 	let countryToPlantKeyMap = new Map();
@@ -110,7 +125,7 @@
 		removeEventListener('mouseup', onMouseUp);
 	}
 
-	function getSaleDataMap(startYear, startMonth, endYear, endMonth, ProductkeyFlag) {
+	function getSaleDataMap() {
 		/**
 		 * SaleDataMap: Map[
 		 * 					[lon,lat]: Map[
@@ -123,18 +138,23 @@
 		let saleDataMap = new Map();
 		let minQuantity = 1000000000000000;
 		let maxQuantity = 0;
-		let minYear = 2025;
-		let maxYear = 2020;
-		console.log(Number(data.sales[0].DeliveryDate.slice(0, 4)));
 		for (let i = 0; i < data.sales.length; i++) {
 			let year = Number(data.sales[i].DeliveryDate.slice(0, 4));
 			let month = Number(data.sales[i].DeliveryDate.slice(5, 7));
+			let plantKey = Number(data.sales[i].PlantKey);
+			let plantFlag = 1 << (plantKey - 4);
+			let productKey = Number(data.sales[i].MaterialKey);
+			let productFlag = 1 << (productKey - 1);
 
-			if (year < startYear || year > endYear || (year == startYear && month < startMonth) || (year == endYear && month > endMonth)) {
+			if (year < minYear || year > maxYear || (year == minYear && month < minMonth) || (year == maxYear && month > maxMonth)) {
 				continue;
 			}
-			minYear = Math.min(minYear, year);
-			maxYear = Math.max(maxYear, year);
+			if ((plantFlag & selectedPlantsMask) === 0) {
+				continue;
+			}
+			if ((productFlag & selectedProductsMask) === 0) {
+				continue;
+			}
 			// TODO: ProductkeyFlag filtering
 			let latLon = customerKeyToLonLat.get(data.sales[i].CustomerKey);
 			let quantity = Number(data.sales[i].OrderQuantity);
@@ -157,16 +177,29 @@
 			maxQuantity = Math.max(maxQuantity, saleDataMap.get(latLon).get("totalSales"));
 		}
 		console.log(minQuantity, maxQuantity);
-		console.log(minYear, maxYear);
 		return [saleDataMap, minQuantity, maxQuantity];
 	}
 
-	let getSaleDataMapReturn = getSaleDataMap(2022, 1, 2024, 12, 3);
+	console.log("selected plants mask outside");
+	console.log(selectedPlantsMask);
+	let getSaleDataMapReturn = getSaleDataMap();
 	$: filteredSaleDataMap = getSaleDataMapReturn[0];
 	$: filteredSaleDataMapKeys = Array.from(filteredSaleDataMap.keys());
 	$: minValueForRadius = getSaleDataMapReturn[1];
 	$: maxValueForRadius = getSaleDataMapReturn[2];
-	console.log(filteredSaleDataMapKeys);
+	console.log(filteredSaleDataMap);
+
+
+	function refreshVariablesAfterFilterChange() {
+		console.log("start")
+		let getSaleDataMapReturn = getSaleDataMap();
+		filteredSaleDataMap = getSaleDataMapReturn[0];
+		filteredSaleDataMapKeys = Array.from(filteredSaleDataMap.keys());
+		minValueForRadius = getSaleDataMapReturn[1];
+		maxValueForRadius = getSaleDataMapReturn[2];
+		console.log(filteredSaleDataMap);
+	}
+
 
 	$: rescaleRadius = function(value) {
 		let range_min = minRadius;
@@ -180,7 +213,13 @@
 		let progress = document.querySelector(".slider .progress");
 		let fromRangeTextElement = document.querySelector(".from-range-text");
 		let untilRangeTextElement = document.querySelector(".until-range-text");
+		let plantCheckBoxes = document.querySelectorAll("#plant-selector input[type='checkbox']");
+		let productCheckBoxes = document.querySelectorAll("#product-selector input[type='checkbox']");
+		console.log(productCheckBoxes)
 
+		
+
+		// code for period range
         rangeInput.forEach(input => {
             input.addEventListener("input", () => {
 				rangeInput[1].value = Math.max(rangeInput[0].value, rangeInput[1].value);
@@ -193,10 +232,10 @@
 				let leftPercentage = ((minVal / rangeInput[0].max) * 100) + "%";
 				let rightPercentage = 100 - ((maxVal / rangeInput[0].max) * 100) + "%";
 
-				let minMonth = (minVal % 12) + 1;
-				let minYear = Math.floor(minVal / 12) + 2022;
-				let maxMonth = (maxVal % 12) + 1;
-				let maxYear = Math.floor(maxVal / 12) + 2022;
+				minMonth = (minVal % 12) + 1;
+				minYear = Math.floor(minVal / 12) + 2022;
+				maxMonth = (maxVal % 12) + 1;
+				maxYear = Math.floor(maxVal / 12) + 2022;
 
 				fromRangeTextElement.innerHTML = `From: ${minMonth}-${minYear}`;
 				untilRangeTextElement.innerHTML = `Until: ${maxMonth}-${maxYear}`;
@@ -204,15 +243,39 @@
 				progress.style.left = leftPercentage;
 				progress.style.right = rightPercentage;
 
-				let getSaleDataMapReturn = getSaleDataMap(minYear, minMonth, maxYear, maxMonth);
-				filteredSaleDataMap = getSaleDataMapReturn[0];
-				minValueForRadius = getSaleDataMapReturn[1];
-				maxValueForRadius = getSaleDataMapReturn[2];
-
-				console.log(filteredSaleDataMap);
-                
+				refreshVariablesAfterFilterChange();
             });
         });
+
+		// code for plant selector
+		plantCheckBoxes.forEach(input => {
+            input.addEventListener("change", () => {
+				let newSelectedPlantsMask = 0;
+				for (let i = 0; i < plantCheckBoxes.length; i++) {
+					if (plantCheckBoxes[i].checked) {
+						newSelectedPlantsMask |= 1 << i
+					}
+				}
+				selectedPlantsMask = newSelectedPlantsMask
+				refreshVariablesAfterFilterChange();
+				console.log((selectedPlantsMask).toString(2));
+			});
+		});
+
+		// code for plant selector
+		productCheckBoxes.forEach(input => {
+            input.addEventListener("change", () => {
+				let newSelectedProductsMask = 0;
+				for (let i = 0; i < 2; i++) {
+					if (productCheckBoxes[i].checked) {
+						newSelectedProductsMask |= 1 << i
+					}
+				}
+				selectedProductsMask = newSelectedProductsMask
+				refreshVariablesAfterFilterChange();
+				console.log((selectedProductsMask).toString(2));
+			});
+		});
 	})
 
 </script>
@@ -226,36 +289,36 @@
 </svelte:head>
 
 <div class="filter-div" style={`border:1px solid black; position: relative; width: ${usedWidth}px; height: 220px; overflow: hidden;`}>
-	<div class="filter-sub-div-0" id="Header" style="height: 40px; width: 100%; top: 0px">
+	<div class="filter-sub-div-0" id="Header" style="height: 40px; width: 100%; top: 0px; border-bottom: 1px solid black; box-sizing: border-box;">
 		<h2 style="position: absolute; top: -18px; left: 10px">Data filtering</h2>
 	</div>
 	
 	<div class="filter-sub-div-1" id="plant-selector" style="height: 30px; width: 100%; top: 40px">
 		<div class="text" style={`right: ${htmlVars.startXPositionForFilteringTextFromRight}px; top: ${htmlVars.percentageForDivText}%`}>Plants: </div>
-		<input type="checkbox" id="Plant4" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<input type="checkbox" class="plant" id="Plant4" checked style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Antwerp</div>
-		<input type="checkbox" id="Plant5" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<input type="checkbox" class="plant" id="Plant5" checked style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForDivText}%`}>Wrocław</div>
-		<input type="checkbox" id="Plant6" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<input type="checkbox" class="plant" id="Plant6" checked style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForDivText}%`}>Lyon</div>
-		<input type="checkbox" id="Plant7" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 3}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<input type="checkbox" class="plant" id="Plant7" checked style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 3}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 3}px; top: ${htmlVars.percentageForDivText}%`}>Birmingham</div>
-		<input type="checkbox" id="Plant8" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 4}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<input type="checkbox" class="plant" id="Plant8" checked style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 4}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 4}px; top: ${htmlVars.percentageForDivText}%`}>Göteborg</div>
 	</div>
 
 	
 	<div class="filter-sub-div-2" id="product-selector" style="height: 30px; width: 100%; top: 70px">
 		<div class="text" style={`right: ${htmlVars.startXPositionForFilteringTextFromRight}px; top: ${htmlVars.percentageForDivText}%`}>Products: </div>
-		<input type="checkbox" id="Product1" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<input type="checkbox" class="product" id="Product1" checked style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Car Battery</div>
-		<input type="checkbox" id="Product2" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<input type="checkbox" class="product" id="Product2" checked style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForDivText}%`}>Home Battery</div>
 	</div>
 
 	<div class="filter-sub-div-1" id="data-selector" style="height: 30px; width: 100%; top: 100px">
 		<div class="text" style={`right: ${htmlVars.startXPositionForFilteringTextFromRight}px; top: ${htmlVars.percentageForDivText}%`}>Data: </div>
-		<input type="checkbox" id="Sales" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<input type="checkbox" id="Sales" checked	 style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Sales</div>
 		<input type="checkbox" id="Delay" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForDivText}%`}>Delay</div>
@@ -282,73 +345,64 @@
 
 	<div class="filter-sub-div-1" id="radius-selector" style="height: 30px; width: 100%; top: 190px">
 		<div class="text" style={`right: ${700}px; top: ${htmlVars.percentageForDivText}%;`}>Radius of city based on: </div>
-		<input type="checkbox" id="Sales" style={`position: absolute; left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
-		<div class="text" style={`left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Max sales to customer in city</div>
+		<input type="checkbox" id="Sales" checked style={`position: absolute; left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Sum of sales to customers in city</div>
 		<input type="checkbox" id="Delay" style={`position: absolute; left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForCheckbox}%`}>
-		<div class="text" style={`left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForDivText}%`}>Sum of sales to customers in city</div>
+		<div class="text" style={`left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForDivText}%`}>Max sales to customer in city</div>
 	</div>
 </div>
 
 
-<div id="map settings">
-	<button on:click={changeScaleFactor(-scaleFactorIncrement)}>-</button>
-	<button on:click={changeScaleFactor(scaleFactorIncrement)}>+</button>
-</div>
-
-
 <main bind:clientWidth={width} bind:clientHeight={height}>
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<svg class="map" width={usedWidth} height={usedHeight} on:mousedown={onMouseDown}>
-		<g transform={"scale (" + String(scaleFactor) + ")"}>
-		<g transform={"translate(" + String(translateX) + "," + String(translateY) + ")"}>
+	<div class="map-div" style={`border:1px solid black; position: absolute; width: ${usedWidth}px; height: ${htmlVars.mapDivHeight}px; overflow: hidden; top: 5px`}>
+		<div class="filter-sub-div-0" id="Header" style="height: 40px; width: 100%; border-bottom: 1px solid black; box-sizing: border-box;">
+			<h2 style="position: absolute; top: -18px; left: 10px">Map</h2>
+			<div id="map settings" style="position: absolute; right: 3%; top: 15%">
+				<button on:click={changeScaleFactor(-scaleFactorIncrement)}>-</button>
+				<button on:click={changeScaleFactor(scaleFactorIncrement)}>+</button>
+			</div>	
+		</div>
 		
-
-		{#each countries as country}
-			<path class=country d={country.path}/>
-		{/each}
 		
-		{#each filteredSaleDataMapKeys as latLonKey}
-
-		<path
-			class={"c" + countryToPlantKeyMap.get(filteredSaleDataMap.get(latLonKey).get("country"))}
-			d={"M " + String(rescale_lon(latLonKey[0], usedWidth)) + " " + String(rescale_lat(latLonKey[1], usedHeight)) + " l 0.0001 0"}
-			style={`stroke-width: ${rescaleRadius(filteredSaleDataMap.get(latLonKey).get("totalSales"))}`}
-		/>
-
-		<path
-			class="defaultCustomer"
-			d={"M " + String(rescale_lon(latLonKey[0], usedWidth)) + " " + String(rescale_lat(latLonKey[1], usedHeight)) + " l 0.0001 0"}
-		/>
-		{/each}
-		
-
-		{#each data.plants as plant}
-		
-		<circle	class={"p" + plant.PlantKey}
-				cx={rescale_lon(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[0], usedWidth)} 
-				cy={rescale_lat(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[1], usedHeight)} 
-				/>
-		<path
-		class={"p" + plant.PlantKey}
-		d={"M " + String(rescale_lon(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[0], usedWidth)) + " " + String(rescale_lat(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[1], usedHeight)) + " l 0.0001 0"}
-		/>
-		{/each}
-		</g>
-		</g>
-		
-	</svg>
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<svg class="map" width={usedWidth} height={htmlVars.mapHeight} on:mousedown={onMouseDown}>
+			<g transform={"scale (" + String(scaleFactor) + ")"}>
+			<g transform={"translate(" + String(translateX) + "," + String(translateY) + ")"}>
+			
+	
+			{#each countries as country}
+				<path class=country d={country.path}/>
+			{/each}
+			
+			{#each filteredSaleDataMapKeys as latLonKey}
+	
+			<path
+				class={"c" + countryToPlantKeyMap.get(filteredSaleDataMap.get(latLonKey).get("country"))}
+				d={"M " + String(rescale_lon(latLonKey[0], usedWidth)) + " " + String(rescale_lat(latLonKey[1], usedHeight)) + " l 0.0001 0"}
+				style={`stroke-width: ${rescaleRadius(filteredSaleDataMap.get(latLonKey).get("totalSales"))}`}
+			/>
+	
+			<path
+				class="defaultCustomer"
+				d={"M " + String(rescale_lon(latLonKey[0], usedWidth)) + " " + String(rescale_lat(latLonKey[1], usedHeight)) + " l 0.0001 0"}
+			/>
+			{/each}
+			
+	
+			{#each data.plants as plant}
+			
+			<circle	class={"p" + plant.PlantKey}
+					cx={rescale_lon(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[0], usedWidth)} 
+					cy={rescale_lat(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[1], usedHeight)} 
+					/>
+			<path
+			class={"p" + plant.PlantKey}
+			d={"M " + String(rescale_lon(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[0], usedWidth)) + " " + String(rescale_lat(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[1], usedHeight)) + " l 0.0001 0"}
+			/>
+			{/each}
+			</g>
+			</g>
+			
+		</svg>
+	</div>
 </main>
-
-
-<ul>
-	{#each data.plants as plant}
-		<li> {plant.PlantKey} {plant.Plant}</li>
-		<li> {plant.PlantCity + " " + plant.PlantCountry} </li>
-		<li> {address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[0]} {rescale_lon(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[0], usedWidth)} </li>
-		<li> {address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[1]} {rescale_lat(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[1], usedHeight)} </li>
-	{/each}
-
-	{#each data.plants as plant}
-		<b> {plant.PlantCountry} </b>
-	{/each}
-</ul>
