@@ -9,7 +9,7 @@
 	// code for world map
 	let width = 100;
 	let height = 100;
-	$: usedWidth = width - 100;
+	$: usedWidth = 900;
 	$: usedHeight = height - 50;
 	$: scaleFactor = 1;
 	const minScaleFactor = 1;
@@ -225,35 +225,45 @@
     <link rel="stylesheet" href="./src/routes/app2/page.css">
 </svelte:head>
 
-<div class="filter-div" style={`border:1px solid black; position: relative; width: ${usedWidth}px; height: 150px`}>
+<div class="filter-div" style={`border:1px solid black; position: relative; width: ${usedWidth}px; height: 220px; overflow: hidden;`}>
+	<div class="filter-sub-div-0" id="Header" style="height: 40px; width: 100%; top: 0px">
+		<h2 style="position: absolute; top: -18px; left: 10px">Data filtering</h2>
+	</div>
 	
-	<div class="filter-sub-div" id="plant-selector" style="height: 30px; width: 100%;">
-		<div class="text" style={`left: ${htmlVars.startXPositionForFilteringText}px; top: ${htmlVars.percentageForDivText}%`}>Plants: </div>
+	<div class="filter-sub-div-1" id="plant-selector" style="height: 30px; width: 100%; top: 40px">
+		<div class="text" style={`right: ${htmlVars.startXPositionForFilteringTextFromRight}px; top: ${htmlVars.percentageForDivText}%`}>Plants: </div>
 		<input type="checkbox" id="Plant4" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
-		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Antwerp DC</div>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Antwerp</div>
 		<input type="checkbox" id="Plant5" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForCheckbox}%`}>
-		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForDivText}%`}>Wrocław DC</div>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForDivText}%`}>Wrocław</div>
 		<input type="checkbox" id="Plant6" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForCheckbox}%`}>
-		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForDivText}%`}>Lyon DC</div>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForDivText}%`}>Lyon</div>
 		<input type="checkbox" id="Plant7" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 3}px; top: ${htmlVars.percentageForCheckbox}%`}>
-		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 3}px; top: ${htmlVars.percentageForDivText}%`}>Birmingham DC</div>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 3}px; top: ${htmlVars.percentageForDivText}%`}>Birmingham</div>
 		<input type="checkbox" id="Plant8" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 4}px; top: ${htmlVars.percentageForCheckbox}%`}>
-		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 4}px; top: ${htmlVars.percentageForDivText}%`}>Göteborg DC</div>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 4}px; top: ${htmlVars.percentageForDivText}%`}>Göteborg</div>
 	</div>
 
-	<div class="filter-sub-div" id="product-selector" style="height: 30px; width: 100%; top: 30px">
-		<div class="text" style={`left: ${htmlVars.startXPositionForFilteringText}px; top: ${htmlVars.percentageForDivText}%`}>Products: </div>
-		<input type="checkbox" id="Plant4" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
+	
+	<div class="filter-sub-div-2" id="product-selector" style="height: 30px; width: 100%; top: 70px">
+		<div class="text" style={`right: ${htmlVars.startXPositionForFilteringTextFromRight}px; top: ${htmlVars.percentageForDivText}%`}>Products: </div>
+		<input type="checkbox" id="Product1" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Car Battery</div>
-		<input type="checkbox" id="Plant5" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<input type="checkbox" id="Product2" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForDivText}%`}>Home Battery</div>
 	</div>
 
+	<div class="filter-sub-div-1" id="data-selector" style="height: 30px; width: 100%; top: 100px">
+		<div class="text" style={`right: ${htmlVars.startXPositionForFilteringTextFromRight}px; top: ${htmlVars.percentageForDivText}%`}>Data: </div>
+		<input type="checkbox" id="Sales" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Sales</div>
+		<input type="checkbox" id="Delay" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForDivText}%`}>Delay</div>
+	</div>
 
 
-
-	<div class="filter-sub-div" id="period-selector" style="height: 60px; width: 100%; top: 60px">
-		<div class="text" style={`position: absolute; left: ${htmlVars.startXPositionForFilteringText}px; top: ${htmlVars.percentageForDivText}%`}>Period: </div>
+	<div class="filter-sub-div-2" id="period-selector" style="height: 60px; width: 100%; top: 130px">
+		<div class="text" style={`right: ${htmlVars.startXPositionForFilteringTextFromRight}px; top: ${htmlVars.percentageForDivText}%`}>Period: </div>
 		<div class="slider">
 			<div class="progress"></div>
 		</div>
@@ -261,15 +271,22 @@
 			<input class="period" type="range" min="0" max="35" value="0">
 			<input class="period" type="range" min="0" max="35" value="36">
 		</div>
-		<div class="from-range-text" style={`position: absolute; left: ${htmlVars.startXPositionForFromText}`}>
+		<div class="from-range-text" style={`position: absolute; left: ${htmlVars.startXPositionForFromText}px`}>
 			From: 1-2022
 		</div>
-		<div class="until-range-text" style={`position: absolute; left: ${htmlVars.startXPositionForUntilText}`}> 
+		<div class="until-range-text" style={`position: absolute; left: ${htmlVars.startXPositionForUntilText}px`}> 
 			Until: 12-2024
 		</div>
 	</div>
 
 
+	<div class="filter-sub-div-1" id="radius-selector" style="height: 30px; width: 100%; top: 190px">
+		<div class="text" style={`right: ${700}px; top: ${htmlVars.percentageForDivText}%;`}>Radius of city based on: </div>
+		<input type="checkbox" id="Sales" style={`position: absolute; left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Max sales to customer in city</div>
+		<input type="checkbox" id="Delay" style={`position: absolute; left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForCheckbox}%`}>
+		<div class="text" style={`left: ${75 + htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 2}px; top: ${htmlVars.percentageForDivText}%`}>Sum of sales to customers in city</div>
+	</div>
 </div>
 
 
@@ -281,7 +298,7 @@
 
 <main bind:clientWidth={width} bind:clientHeight={height}>
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<svg width={usedWidth} height={usedHeight} style="border:1px solid black" on:mousedown={onMouseDown}>
+	<svg class="map" width={usedWidth} height={usedHeight} on:mousedown={onMouseDown}>
 		<g transform={"scale (" + String(scaleFactor) + ")"}>
 		<g transform={"translate(" + String(translateX) + "," + String(translateY) + ")"}>
 		

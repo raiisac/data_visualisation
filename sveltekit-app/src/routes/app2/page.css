@@ -10,20 +10,33 @@
     --customer-default-radius: 3.5;
     --slider-width: 450px;
     --slider-position-x: 250px;
-    --slider-position-y: 77%;
+    --slider-position-y: 70%;
     --progress-position-x: 255px;
-    --progress-position-y: 70%;
+    --progress-position-y: 63%;
     --customer-opacity: 0.4;
 }
 
 div.text {
     position: absolute;
-    border: 1px solid black;
 }
 
-div.filter-sub-div {
+
+div.filter-sub-div-0 {
     position: absolute;
-    border:1px solid black;
+    border-radius: 0px;
+    background-color: #868686;
+}
+
+div.filter-sub-div-1 {
+    position: absolute;
+    border-radius: 0px;
+    background-color: #bbdeff;
+}
+
+div.filter-sub-div-2 {
+    position: absolute;
+    border-radius: 0px;
+    background-color: #7fc1ff;
 }
 
 div.slider {
@@ -78,8 +91,10 @@ div {
     border-radius: 10px;
 }
 
-svg {
+svg.map {
     border-radius: 10px;
+    border:1px solid black; 
+    background-color: #e1f1ff
 }
 
 path.country {
