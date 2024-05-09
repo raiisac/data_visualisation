@@ -53,7 +53,7 @@ export const load = async ({ fetch }) => {
     return {
       plants: parsedCSVPlants.data,
       sales: parsedCSVSales.data,
-      parsedCSVSalesWithDelays: parsedCSVSalesWithDelays.data,
+      salesWithDelays: parsedCSVSalesWithDelays.data,
       customers: parsedCSVCustomers.data,
       customerPlant: parsedCSVCustomerPlant.data,
       coordinates: parsedCSVCoordinates.data

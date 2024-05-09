@@ -55,6 +55,8 @@
 	$: numberOfCities = 0;
 	$: numberOfCarBatteries = 0;
 	$: numberOfHomeBatteries = 0;
+	$: numberOfOrders = 0;
+	$: numberOfDelays = 0;
 
 	let geojsonPath = "http://localhost:5173/europe.geojson"
 	let geojson;
@@ -66,7 +68,8 @@
 	const maxLat = 71.154709;
 
 	const minRadius = 10;
-	const maxRadius = 60;
+	$: maxRadius = 60;
+	maxRadius = 60;
 	
 	$: rescale_lon = function(longitude, givenWidth) {
 		// console.log(width);
@@ -122,6 +125,12 @@
 		console.log(scaleFactor);
 	}
 
+	$: rescaleRadius = function(value) {
+		let range_min = minRadius;
+		let range_max = maxRadius;
+      	return ((range_max - range_min)*(value-minValueForRadius))/(maxValueForRadius-minValueForRadius) + range_min
+  	}
+
 	function onMouseMove (event) {
 		translateX = originTranslateX + ((event.clientX - originXMouseDown) / scaleFactor);
 		translateY = originTranslateY + ((event.clientY - originYMouseDown) / scaleFactor);
@@ -141,9 +150,104 @@
 		removeEventListener('mouseup', onMouseUp);
 	}
 
+	function getDelayDataMap() {
+		/**
+		 * delayDataMap: Map[
+		 * 					[lon,lat]: Map[
+		 * 									"country": country,
+		 * 									"nbOrders": int,
+		 * 									"daysOfDelay": int,
+		 * 								    ClientName: Map[
+		 * 														"nbOrders": int
+		 * 														"daysOfDelay": int
+		 * 													]
+		 *								  ]
+		 * 				   ]
+		*/
+		console.log(data.salesWithDelays[0]);
+		let delayDataMap = new Map();
+		let nbCities = 0;
+		let nbCustomers = 0;
+		let nbOfDelays = 0;
+		let nbOfOrders = 0;
+		
+		for (let i = 0; i < data.salesWithDelays.length; i++) {
+			let year = Number(data.salesWithDelays[i].SalesOrderCreationDate.slice(0, 4));
+			let month = Number(data.salesWithDelays[i].SalesOrderCreationDate.slice(5, 7));
+			let plantKey = Number(data.salesWithDelays[i].PlantKey);
+			let plantFlag = 1 << (plantKey - 4);
+			let productKey = Number(data.salesWithDelays[i].MaterialKey);
+			let productFlag = 1 << (productKey - 1);
+
+			if (year < minYear || year > maxYear || (year == minYear && month < minMonth) || (year == maxYear && month > maxMonth)) {
+				continue;
+			}
+			if ((plantFlag & selectedPlantsMask) === 0) {
+				continue;
+			}
+			if ((productFlag & selectedProductsMask) === 0) {
+				continue;
+			}
+			let latLon = customerKeyToLonLat.get(data.salesWithDelays[i].CustomerKey);
+			let delay = Number(data.salesWithDelays[i].delay);
+			nbOfOrders += 1;
+			if (delay < 0) { 
+				delay = 0; 
+			} else {
+				nbOfDelays += 1;
+			}
+			if (delayDataMap.has(latLon)) {
+				let daysOfDelay = delayDataMap.get(latLon).get("daysOfDelay");
+				let nbOrders = delayDataMap.get(latLon).get("nbOrders");
+				delayDataMap.get(latLon).set("daysOfDelay", daysOfDelay + delay);
+				delayDataMap.get(latLon).set("nbOrders", nbOrders + 1);
+				if (delayDataMap.get(latLon).has(data.salesWithDelays[i].CustomerKey)) {
+					let customerDaysOfDelay = delayDataMap.get(latLon).get(data.salesWithDelays[i].CustomerKey).get("daysOfDelay");
+					let customerNbOrders = delayDataMap.get(latLon).get(data.salesWithDelays[i].CustomerKey).get("nbOrders");
+					delayDataMap.get(latLon).get(data.salesWithDelays[i].CustomerKey).set("daysOfDelay", customerDaysOfDelay + delay);
+					delayDataMap.get(latLon).get(data.salesWithDelays[i].CustomerKey).set("nbOrders", customerNbOrders + 1);
+				} else {
+					nbCustomers += 1;
+					delayDataMap.get(latLon).set(data.salesWithDelays[i].CustomerKey, new Map([["daysOfDelay", delay], ["nbOrders", 1]]));
+				}
+			} else {
+				nbCities += 1;
+				nbCustomers += 1;
+				delayDataMap.set(latLon, new Map());
+				delayDataMap.get(latLon).set("country", customerKeyToCountry.get(data.salesWithDelays[i].CustomerKey));
+				delayDataMap.get(latLon).set("nbOrders", 1);
+				delayDataMap.get(latLon).set("daysOfDelay", delay);
+				delayDataMap.get(latLon).set(data.salesWithDelays[i].CustomerKey, new Map([["daysOfDelay", delay], ["nbOrders", 1]]));
+			}
+		}
+
+		let bigNum = 1000000000000000;
+		let minQuantity = bigNum;
+		let maxQuantity = 0;
+		for (const lonLatKey of Array.from(delayDataMap.keys())) {
+			let avgDelay = delayDataMap.get(lonLatKey).get("daysOfDelay") / delayDataMap.get(lonLatKey).get("nbOrders");
+			if (avgDelay === 0) {
+				delayDataMap.delete(lonLatKey);
+			} else {
+				delayDataMap.get(lonLatKey).set("averageDelay", avgDelay);
+				minQuantity = Math.min(minQuantity, avgDelay);
+				maxQuantity = Math.max(maxQuantity, avgDelay);
+			}
+		}
+		if (minQuantity == bigNum) { minQuantity = 0; }
+		console.log("minmax");
+		console.log(minQuantity, maxQuantity);
+
+		let extraDataMap = new Map([["minQuantity", minQuantity], ["maxQuantity", maxQuantity], 
+									["nbCustomers", nbCustomers], ["nbCities", nbCities], ["nbOfOrders", nbOfOrders],
+									["nbOfDelays", nbOfDelays]])
+		return [delayDataMap, extraDataMap];
+
+	}
+
 	function getSaleDataMap() {
 		/**
-		 * SaleDataMap: Map[
+		 * saleDataMap: Map[
 		 * 					[lon,lat]: Map[
 		 * 									"country": country,
 		 * 									"totalSales": int,
@@ -157,11 +261,10 @@
 		let nbCustomers = 0;
 		let nbCarBatteries = 0;
 		let nbHomeBatteries = 0;
-		let minMaxSelector = "totalSales";
 		let maxQuantity = 0;
 		for (let i = 0; i < data.sales.length; i++) {
-			let year = Number(data.sales[i].DeliveryDate.slice(0, 4));
-			let month = Number(data.sales[i].DeliveryDate.slice(5, 7));
+			let year = Number(data.sales[i].SalesOrderCreationDate.slice(0, 4));
+			let month = Number(data.sales[i].SalesOrderCreationDate.slice(5, 7));
 			let plantKey = Number(data.sales[i].PlantKey);
 			let plantFlag = 1 << (plantKey - 4);
 			let productKey = Number(data.sales[i].MaterialKey);
@@ -193,21 +296,28 @@
 					nbCustomers += 1;
 					saleDataMap.get(latLon).set(data.sales[i].CustomerKey, quantity);
 				}
+				let maxSalesQuantity = saleDataMap.get(latLon).get("maxSales");
+				let potentialNewMaxSalesQuantity = saleDataMap.get(latLon).get(data.sales[i].CustomerKey);
+				saleDataMap.get(latLon).set("maxSales", Math.max(maxSalesQuantity, potentialNewMaxSalesQuantity));
 			} else {
 				nbCities += 1;
 				nbCustomers += 1;
 				saleDataMap.set(latLon, new Map());
 				saleDataMap.get(latLon).set("country", customerKeyToCountry.get(data.sales[i].CustomerKey));
 				saleDataMap.get(latLon).set("totalSales", quantity);
+				saleDataMap.get(latLon).set("maxSales", quantity);
 				saleDataMap.get(latLon).set(data.sales[i].CustomerKey, quantity);
 			}
-			maxQuantity = Math.max(maxQuantity, saleDataMap.get(latLon).get(minMaxSelector));
+			maxQuantity = Math.max(maxQuantity, saleDataMap.get(latLon).get(salesMinMaxSelector));
 		}
 
-		let minQuantity = 1000000000000000;
+		let bigNum = 1000000000000000;
+		let minQuantity = bigNum;
 		for (const lonLatKey of Array.from(saleDataMap.keys())) {
-			minQuantity = Math.min(minQuantity, saleDataMap.get(lonLatKey).get(minMaxSelector));
+			minQuantity = Math.min(minQuantity, saleDataMap.get(lonLatKey).get(salesMinMaxSelector));
 		}
+		if (minQuantity == bigNum) { minQuantity = 0; }
+		console.log("minmax");
 		console.log(minQuantity, maxQuantity);
 
 		let extraDataMap = new Map([["minQuantity", minQuantity], ["maxQuantity", maxQuantity], 
@@ -218,34 +328,35 @@
 
 	console.log("selected plants mask outside");
 	console.log(selectedPlantsMask);
-	let getSaleDataMapReturn = getSaleDataMap();
-	$: filteredSaleDataMap = getSaleDataMapReturn[0];
-	$: filteredSaleDataMapKeys = Array.from(filteredSaleDataMap.keys());
-	$: minValueForRadius = getSaleDataMapReturn[1].get("minQuantity");
-	$: maxValueForRadius = getSaleDataMapReturn[1].get("maxQuantity");
+	let dataMapReturn = getSaleDataMap();
+	$: filteredDataMap = dataMapReturn[0];
+	$: filteredDataMapKeys = Array.from(filteredDataMap.keys());
+	$: minValueForRadius = dataMapReturn[1].get("minQuantity");
+	$: maxValueForRadius = dataMapReturn[1].get("maxQuantity");
 
 
 	function refreshVariablesAfterFilterChange() {
-		console.log("start")
-		let getSaleDataMapReturn = getSaleDataMap();
-		filteredSaleDataMap = getSaleDataMapReturn[0];
-		filteredSaleDataMapKeys = Array.from(filteredSaleDataMap.keys());
-		minValueForRadius = getSaleDataMapReturn[1].get("minQuantity");
-		maxValueForRadius = getSaleDataMapReturn[1].get("maxQuantity");
-		numberOfCustomers = getSaleDataMapReturn[1].get("nbCustomers");
-		numberOfCities = getSaleDataMapReturn[1].get("nbCities");
-		numberOfCarBatteries = getSaleDataMapReturn[1].get("nbCarBatteries");
-		numberOfHomeBatteries = getSaleDataMapReturn[1].get("nbHomeBatteries");
-		console.log(filteredSaleDataMap);
+		console.log("start");
+		let dataMapReturn;
+		if (selectedTypeOfDataText == "sales") {
+			dataMapReturn = getSaleDataMap();
+			numberOfCarBatteries = dataMapReturn[1].get("nbCarBatteries");
+			numberOfHomeBatteries = dataMapReturn[1].get("nbHomeBatteries");
+		} else {
+			dataMapReturn = getDelayDataMap();
+			numberOfOrders = dataMapReturn[1].get("nbOfOrders");
+			numberOfDelays = dataMapReturn[1].get("nbOfDelays");
+		}
+		filteredDataMap = dataMapReturn[0];
+		filteredDataMapKeys = Array.from(filteredDataMap.keys());
+		minValueForRadius = dataMapReturn[1].get("minQuantity");
+		maxValueForRadius = dataMapReturn[1].get("maxQuantity");
+		numberOfCustomers = dataMapReturn[1].get("nbCustomers");
+		numberOfCities = dataMapReturn[1].get("nbCities");
+		
+		console.log(filteredDataMap);
 		setAnalysisText();
 	}
-
-
-	$: rescaleRadius = function(value) {
-		let range_min = minRadius;
-		let range_max = maxRadius;
-      	return ((range_max - range_min)*(value-minValueForRadius))/(maxValueForRadius-minValueForRadius) + range_min
-  	}
 
 	const monthIndexToMonthMap = new Map([[1, "January"], [2, "February"], [3, "March"], [4, "April"],
 											[5, "May"], [6, "June"], [7, "July"], [8, "August"],
@@ -260,20 +371,26 @@
 		customerText.innerHTML = `There are <strong>${numberOfCustomers} different customers</strong> in <strong>${numberOfCities} different cities</strong>.`;
 		// product text
 		let productText = document.getElementById("productText");
-		if (selectedProductsMask == 3) {
-			productText.innerHTML = `There were <strong>${(numberOfCarBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} car batteries</strong> and <strong>${(numberOfHomeBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} home batteries</strong> sold.`
-		} else if (selectedProductsMask == 1) {
-			productText.innerHTML = `There were <strong>${(numberOfCarBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} car batteries</strong> sold.`
-		} else if (selectedProductsMask == 2) {
-			productText.innerHTML = `There were <strong>${(numberOfHomeBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} home batteries</strong> sold.`
-		} else {
-			productText.innerHTML = `There are <strong>no</strong> products selected`;
-		}
-		// radius text
 		let smallRadiusText = document.getElementById("small-radius-text");
-		smallRadiusText.innerHTML = `<strong>${(minValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`
 		let bigRadiusText = document.getElementById("big-radius-text");
-		bigRadiusText.innerHTML = `<strong>${(maxValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`
+		if (selectedTypeOfDataText == "sales") {
+			if (selectedProductsMask == 3) {
+				productText.innerHTML = `There were <strong>${(numberOfCarBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} car batteries</strong> and <strong>${(numberOfHomeBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} home batteries</strong> sold.`
+			} else if (selectedProductsMask == 1) {
+				productText.innerHTML = `There were <strong>${(numberOfCarBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} car batteries</strong> sold.`
+			} else if (selectedProductsMask == 2) {
+				productText.innerHTML = `There were <strong>${(numberOfHomeBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} home batteries</strong> sold.`
+			} else {
+				productText.innerHTML = `There are <strong>no</strong> products selected`;
+			}
+			// radius text
+			smallRadiusText.innerHTML = `<strong>${(minValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`
+			bigRadiusText.innerHTML = `<strong>${(maxValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`
+		} else {
+			productText.innerHTML = `There were <strong>${(numberOfOrders).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} orders</strong> of which <strong>${(numberOfDelays).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> were <strong>delayed</strong>.`
+			smallRadiusText.innerHTML = `<strong>${(minValueForRadius).toFixed(4)}</strong> ${selectedTypeOfDataText}`
+			bigRadiusText.innerHTML = `<strong>${(maxValueForRadius).toFixed(4)}</strong> ${selectedTypeOfDataText}`
+		}
 
 	}
 
@@ -360,6 +477,8 @@
 					} else {
 						typeOfDataSelectorCheckBoxes[0].checked = false;
 						selectedTypeOfDataText = "days of delay";
+						salesMinMaxSelector = "averageDelay";
+						maxRadius = 30;
 					}
 				} else {
 					if (!typeOfDataSelectorCheckBoxes[0].checked) {
@@ -367,9 +486,18 @@
 					} else {
 						typeOfDataSelectorCheckBoxes[1].checked = false;
 						selectedTypeOfDataText = "sales";
+						if (radiusSelectorCheckBoxes[0].checked) {
+							salesMinMaxSelector = "totalSales";
+							maxRadius = 60;
+						} else {
+							salesMinMaxSelector = "maxSales";
+							maxRadius = 30;
+						}
+
 					}
 				}
-				refreshVariablesAfterFilterChange();
+				refreshVariablesAfterFilterChange(selectedTypeOfDataText);
+				console.log(selectedTypeOfDataText);
 			});
 		});
 
@@ -382,6 +510,7 @@
 					} else {
 						radiusSelectorCheckBoxes[0].checked = false;
 						salesMinMaxSelector = "maxSales";
+						maxRadius = 30;
 					}
 				} else {
 					if (!radiusSelectorCheckBoxes[0].checked) {
@@ -389,6 +518,7 @@
 					} else {
 						radiusSelectorCheckBoxes[1].checked = false;
 						salesMinMaxSelector = "totalSales";
+						maxRadius = 60;
 					}
 				}
 				console.log(salesMinMaxSelector);
@@ -493,15 +623,15 @@
 				<path class=country d={country.path}/>
 			{/each}
 			
-			{#each filteredSaleDataMapKeys as latLonKey}
+			{#each filteredDataMapKeys as latLonKey}
 			<path
-				class={"c" + countryToPlantKeyMap.get(filteredSaleDataMap.get(latLonKey).get("country"))}
+				class={"c" + countryToPlantKeyMap.get(filteredDataMap.get(latLonKey).get("country"))}
 				d={"M " + String(rescale_lon(latLonKey[0], usedWidth)) + " " + String(rescale_lat(latLonKey[1], usedHeight)) + " l 0.0001 0"}
-				style={`stroke-width: ${rescaleRadius(filteredSaleDataMap.get(latLonKey).get("totalSales"))}`}
+				style={`stroke-width: ${rescaleRadius(filteredDataMap.get(latLonKey).get(salesMinMaxSelector))}`}
 			/>
 			{/each}
 			
-			{#each filteredSaleDataMapKeys as latLonKey}
+			{#each filteredDataMapKeys as latLonKey}
 			<path
 				class="defaultCustomer"
 				d={"M " + String(rescale_lon(latLonKey[0], usedWidth)) + " " + String(rescale_lat(latLonKey[1], usedHeight)) + " l 0.0001 0"}
