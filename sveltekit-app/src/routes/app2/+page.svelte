@@ -34,6 +34,11 @@
 	$: selectedProductsMask = 3;
 	selectedProductsMask = 3;
 
+	// type of data selector
+	$: selectedTypeOfDataText = "sales";
+	selectedTypeOfDataText = "sales";
+
+
 	// radius selection for sales
 	$: salesMinMaxSelector = "totalSales";
 	salesMinMaxSelector = "totalSales";
@@ -60,7 +65,7 @@
 	const minLat = 29.486706;
 	const maxLat = 71.154709;
 
-	const minRadius = 7;
+	const minRadius = 10;
 	const maxRadius = 60;
 	
 	$: rescale_lon = function(longitude, givenWidth) {
@@ -247,10 +252,13 @@
 											[9, "September"], [10, "Octobre"], [11, "November"], [12, "December"],]);
 
 	function setAnalysisText() {
+		// period text
 		let periodText = document.getElementById("periodText");
 		periodText.innerHTML = `The shown data is from the period between <strong>${monthIndexToMonthMap.get(minMonth)} ${minYear}</strong> until <strong>${monthIndexToMonthMap.get(maxMonth)} ${maxYear}</strong>.`;
+		// customer text
 		let customerText = document.getElementById("customerText");
 		customerText.innerHTML = `There are <strong>${numberOfCustomers} different customers</strong> in <strong>${numberOfCities} different cities</strong>.`;
+		// product text
 		let productText = document.getElementById("productText");
 		if (selectedProductsMask == 3) {
 			productText.innerHTML = `There were <strong>${(numberOfCarBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} car batteries</strong> and <strong>${(numberOfHomeBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} home batteries</strong> sold.`
@@ -261,6 +269,12 @@
 		} else {
 			productText.innerHTML = `There are <strong>no</strong> products selected`;
 		}
+		// radius text
+		let smallRadiusText = document.getElementById("small-radius-text");
+		smallRadiusText.innerHTML = `<strong>${(minValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`
+		let bigRadiusText = document.getElementById("big-radius-text");
+		bigRadiusText.innerHTML = `<strong>${(maxValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`
+
 	}
 
 	onMount(() => {
@@ -272,6 +286,7 @@
 		let plantCheckBoxes = document.querySelectorAll("#plant-selector input[type='checkbox']");
 		let productCheckBoxes = document.querySelectorAll("#product-selector input[type='checkbox']");
 		let radiusSelectorCheckBoxes = document.querySelectorAll("#radius-selector input[type='checkbox']");
+		let typeOfDataSelectorCheckBoxes = document.querySelectorAll("#type-of-data-selector input[type='checkbox']");
 
 		// set initial analysis text
 		refreshVariablesAfterFilterChange();
@@ -321,7 +336,7 @@
 			});
 		});
 
-		// code for plant selector
+		// code for product selector
 		productCheckBoxes.forEach(input => {
             input.addEventListener("change", () => {
 				let newSelectedProductsMask = 0;
@@ -336,7 +351,29 @@
 			});
 		});
 
-		// code for plant selector
+		// code for radius selector
+		typeOfDataSelectorCheckBoxes.forEach(input => {
+            input.addEventListener("change", () => {
+				if (selectedTypeOfDataText == "sales") {
+					if (!typeOfDataSelectorCheckBoxes[1].checked) {
+						typeOfDataSelectorCheckBoxes[0].checked = true;
+					} else {
+						typeOfDataSelectorCheckBoxes[0].checked = false;
+						selectedTypeOfDataText = "days of delay";
+					}
+				} else {
+					if (!typeOfDataSelectorCheckBoxes[0].checked) {
+						typeOfDataSelectorCheckBoxes[1].checked = true;
+					} else {
+						typeOfDataSelectorCheckBoxes[1].checked = false;
+						selectedTypeOfDataText = "sales";
+					}
+				}
+				refreshVariablesAfterFilterChange();
+			});
+		});
+
+		// code for radius selector
 		radiusSelectorCheckBoxes.forEach(input => {
             input.addEventListener("change", () => {
 				if (salesMinMaxSelector == "totalSales") {
@@ -398,7 +435,7 @@
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForDivText}%`}>Home Battery</div>
 	</div>
 
-	<div class="filter-sub-div-1" id="data-selector" style="height: 30px; width: 100%; top: 100px">
+	<div class="filter-sub-div-1" id="type-of-data-selector" style="height: 30px; width: 100%; top: 100px">
 		<div class="text" style={`right: ${htmlVars.startXPositionForFilteringTextFromRight}px; top: ${htmlVars.percentageForDivText}%`}>Data: </div>
 		<input type="checkbox" id="Sales" checked	 style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Sales</div>
@@ -487,7 +524,7 @@
 
 <div class="analysis-div" style={`border:1px solid black; position: absolute; width: 400px; height: 707px; overflow: hidden; left: 915px; top: 8px;`}>
 	<div class="filter-sub-div-0" id="Header" style="height: 40px; width: 100%; top: 0px; border-bottom: 1px solid black; box-sizing: border-box;">
-		<h2 style="position: absolute; top: -18px; left: 10px">Data Analysis</h2>
+		<h2 style="position: absolute; top: -18px; left: 10px">Data Details</h2>
 	</div>
 
 	<div class="analysis-sub-div-1" id="periodTextDiv" style="height: 90px; width: 100%; top: 40px">
@@ -502,12 +539,20 @@
 		<div class="analysis-sub-sub-div-1" id="productText" style=""></div>
 	</div>
 
-	<div class="analysis-sub-div-2" id="radiusTextDiv" style="height: 150px; width: 100%; top: 280px">
-		<div class="max-radius-text" id="radiusText" style=""></div>
+	<div class="analysis-sub-div-2" id="radiusTextDiv" style="height: 170px; width: 100%; top: 280px">
 		<svg width=100% height=100%>
-			<path d={"M 300 50 l0.0001 0"} stroke="black" style={`stroke-width: ${maxRadius}; stroke-linecap: round; opacity: 0.3;`}	/>
-			<path d={"M 300 50 l0.0001 0"} stroke="black" style={`stroke-width: ${4}; stroke-linecap: round;`}	/>
+			<path d={"M 90 40 l0.0001 0"} stroke="black" style={`stroke-width: ${minRadius}; stroke-linecap: round; opacity: 0.3;`}/>
+			<path d={"M 90 40 l0.0001 0"} stroke="black" style={`stroke-width: ${4}; stroke-linecap: round;`}/>
+
+			<path d={"M 300 40 l0.0001 0"} stroke="black" style={`stroke-width: ${maxRadius}; stroke-linecap: round; opacity: 0.3;`}/>
+			<path d={"M 300 40 l0.0001 0"} stroke="black" style={`stroke-width: ${4}; stroke-linecap: round;`}/>
 		</svg>
+		<div class="analysis-sub-sub-div-2" id="small-default-radius-text" style=" width: 125px; left: 35px; top: 75px;">corresponds to:</div>
+		<div class="analysis-sub-sub-div-2" id="small-radius-text" style="border:1px solid black; width: 150px; display: grid; place-items: center; left: 23px; top: 105px;">x sales</div>
+
+			
+		<div class="analysis-sub-sub-div-2" id="big-default-radius-text" style="width: 125px; left: 235px; top: 75px;">corresponds to:</div>
+		<div class="analysis-sub-sub-div-2" id="big-radius-text" style="border:1px solid black; width: 150px; display: grid; place-items: center; left: 223px; top: 105px;">y sales</div>
 		
 	</div>
 

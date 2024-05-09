@@ -17,6 +17,14 @@ export const load = async ({ fetch }) => {
     let csvSales = await responseSales.text()
     let parsedCSVSales = Papa.parse(csvSales, {header: true})
 
+      // Sales with delays data
+      const responseSalesWithDelays = await fetch('http://localhost:5173/SalesWithDelays.csv', {
+        headers: {
+          'Content-Type': 'text/csv'
+      }})
+      let csvSalesWithDelays = await responseSalesWithDelays.text()
+      let parsedCSVSalesWithDelays = Papa.parse(csvSalesWithDelays, {header: true})
+
     // Customer data
     const responseCustomers = await fetch('http://localhost:5173/Customers.csv', {
       headers: {
@@ -45,6 +53,7 @@ export const load = async ({ fetch }) => {
     return {
       plants: parsedCSVPlants.data,
       sales: parsedCSVSales.data,
+      parsedCSVSalesWithDelays: parsedCSVSalesWithDelays.data,
       customers: parsedCSVCustomers.data,
       customerPlant: parsedCSVCustomerPlant.data,
       coordinates: parsedCSVCoordinates.data
