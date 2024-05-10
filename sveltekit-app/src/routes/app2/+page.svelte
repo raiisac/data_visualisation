@@ -112,7 +112,6 @@
 	}
 	
 	$: rescale_lon = function(longitude, givenWidth) {
-		// console.log(width);
 		let range_min = 0;
 		let range_max = givenWidth;
       	return (((range_max - range_min)*(longitude-minLon))/(maxLon-minLon)) + range_min;
@@ -169,7 +168,6 @@
 
 	$: changeScaleFactor = function(increase) {
 		scaleFactor = Math.min(maxScaleFactor, Math.max(minScaleFactor, scaleFactor + increase));
-		console.log(scaleFactor);
 	}
 
 	$: rescaleRadius = function(value) {
@@ -211,7 +209,6 @@
 		 *								  ]
 		 * 				   ]
 		*/
-		console.log(data.salesWithDelays[0]);
 		let delayDataMap = new Map();
 		let nbCities = 0;
 		let nbCustomers = 0;
@@ -282,8 +279,6 @@
 			}
 		}
 		if (minQuantity == bigNum) { minQuantity = 0; }
-		console.log("minmax");
-		console.log(minQuantity, maxQuantity);
 
 		let extraDataMap = new Map([["minQuantity", minQuantity], ["maxQuantity", maxQuantity], 
 									["nbCustomers", nbCustomers], ["nbCities", nbCities], ["nbOfOrders", nbOfOrders],
@@ -364,8 +359,6 @@
 			minQuantity = Math.min(minQuantity, saleDataMap.get(lonLatKey).get(salesMinMaxSelector));
 		}
 		if (minQuantity == bigNum) { minQuantity = 0; }
-		console.log("minmax");
-		console.log(minQuantity, maxQuantity);
 
 		let extraDataMap = new Map([["minQuantity", minQuantity], ["maxQuantity", maxQuantity], 
 									["nbCustomers", nbCustomers], ["nbCities", nbCities], ["nbCarBatteries", nbCarBatteries],
@@ -373,8 +366,6 @@
 		return [saleDataMap, extraDataMap];
 	}
 
-	console.log("selected plants mask outside");
-	console.log(selectedPlantsMask);
 	let dataMapReturn = getSaleDataMap();
 	$: filteredDataMap = dataMapReturn[0];
 	$: filteredDataMapKeys = Array.from(filteredDataMap.keys());
@@ -383,7 +374,6 @@
 
 
 	function refreshVariablesAfterFilterChange() {
-		console.log("start");
 		let dataMapReturn;
 		if (selectedTypeOfDataText == "sales") {
 			dataMapReturn = getSaleDataMap();
@@ -401,7 +391,6 @@
 		numberOfCustomers = dataMapReturn[1].get("nbCustomers");
 		numberOfCities = dataMapReturn[1].get("nbCities");
 		
-		console.log(filteredDataMap);
 		// histogram
 		let HistogramData = getValuesOfBins(filteredDataMap);
 		binValueForHistogram = HistogramData[0];
@@ -514,7 +503,6 @@
 				}
 				selectedPlantsMask = newSelectedPlantsMask
 				refreshVariablesAfterFilterChange();
-				console.log((selectedPlantsMask).toString(2));
 			});
 		});
 
@@ -529,7 +517,6 @@
 				}
 				selectedProductsMask = newSelectedProductsMask
 				refreshVariablesAfterFilterChange();
-				console.log((selectedProductsMask).toString(2));
 			});
 		});
 
@@ -569,7 +556,6 @@
 					}
 				}
 				refreshVariablesAfterFilterChange(selectedTypeOfDataText);
-				console.log(selectedTypeOfDataText);
 			});
 		});
 
@@ -593,7 +579,6 @@
 						maxRadius = 60;
 					}
 				}
-				console.log(salesMinMaxSelector);
 				refreshVariablesAfterFilterChange();
 			});
 		});
@@ -844,8 +829,8 @@
 {#if selectedHistogramIndex != undefined}
 	<div class="mouse-hover-div" style="left: {mouse_x + 10}px; top: {mouse_y - 10}px">
 		{#if selectedTypeOfDataText == "sales"}
-			start range: {binRangesForHistogram[selectedHistogramIndex].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}<br>
-			end range: {binRangesForHistogram[selectedHistogramIndex+1].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}<br>
+			start range: {binRangesForHistogram[selectedHistogramIndex].toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}<br>
+			end range: {binRangesForHistogram[selectedHistogramIndex+1].toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}<br>
 		{:else}
 			start range: {binRangesForHistogram[selectedHistogramIndex].toFixed(2)}<br>
 			end range: {binRangesForHistogram[selectedHistogramIndex+1].toFixed(2)}<br>
