@@ -479,6 +479,11 @@
 						selectedTypeOfDataText = "days of delay";
 						salesMinMaxSelector = "averageDelay";
 						maxRadius = 30;
+						// make sales related checkboxes unclickable
+						for (const radiusSelectorCheckBox of radiusSelectorCheckBoxes) {
+							console.log("disabled");
+							radiusSelectorCheckBox.disabled = true;
+						}
 					}
 				} else {
 					if (!typeOfDataSelectorCheckBoxes[0].checked) {
@@ -493,7 +498,10 @@
 							salesMinMaxSelector = "maxSales";
 							maxRadius = 30;
 						}
-
+						// make sales related checkboxes clickable
+						for (const radiusSelectorCheckBox of radiusSelectorCheckBoxes) {
+							radiusSelectorCheckBox.disabled = false;
+						}
 					}
 				}
 				refreshVariablesAfterFilterChange(selectedTypeOfDataText);
