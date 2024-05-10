@@ -70,18 +70,58 @@
 	const minRadius = 10;
 	$: maxRadius = 60;
 	maxRadius = 60;
+
+	// histogram variables
+	const numberOfBins = 30;
+	const maxHeightOfBin = 150;
+	const histogramWidth = 300;
+	const barWidth = histogramWidth / numberOfBins;
+	$: binValueForHistogram = Array(numberOfBins).fill(0);
+	$: maxOccurenceForHistogram = 1;
+	maxOccurenceForHistogram = 1;
+
+
+	$: rescaleHeightOfBin = function(value) {
+		let rangeMin = 0;
+		let rangeMax = maxHeightOfBin;
+		return (((rangeMax - rangeMin)*(value-0))/(maxOccurenceForHistogram-0)) + rangeMin;
+	}
+
+	let getValuesOfBins = function(dataMap) {
+		let binRanges = Array(numberOfBins).fill(0);
+		let binValues = Array(numberOfBins).fill(0);
+
+		const increments = maxValueForRadius / numberOfBins;
+		binRanges[0] = increments;
+		for (let i = 1; i < numberOfBins - 1; i++) {
+			binRanges[i] = binRanges[i-1] + increments
+		}
+		binRanges[numberOfBins-1] = maxValueForRadius;
+
+		for (const dataMapKeys of Array.from(dataMap.keys())) {
+			let value = dataMap.get(dataMapKeys).get(salesMinMaxSelector);
+			for (let i = 0; i < numberOfBins; i++) {
+				if (value <= binRanges[i]) {
+					binValues[i] += 1;
+					break;
+				}
+			}
+		}
+		console.log("binValues", binValues);
+		return binValues;
+	}
 	
 	$: rescale_lon = function(longitude, givenWidth) {
 		// console.log(width);
 		let range_min = 0;
 		let range_max = givenWidth;
-      	return (((range_max - range_min)*(longitude-minLon))/(maxLon-minLon)) + range_min
+      	return (((range_max - range_min)*(longitude-minLon))/(maxLon-minLon)) + range_min;
   	}
 
 	$: rescale_lat = function(latitude, givenHeight) {
 		let range_min = givenHeight;
 		let range_max = 0;
-      	return (((range_max - range_min)*(latitude-minLat))/(maxLat-minLat)) + range_min
+      	return (((range_max - range_min)*(latitude-minLat))/(maxLat-minLat)) + range_min;
   	}
 
 	$: projection = geoTransform({
@@ -355,6 +395,9 @@
 		numberOfCities = dataMapReturn[1].get("nbCities");
 		
 		console.log(filteredDataMap);
+		// histogram
+		binValueForHistogram = getValuesOfBins(filteredDataMap);
+		maxOccurenceForHistogram = Math.max(...binValueForHistogram);
 		setAnalysisText();
 	}
 
@@ -373,24 +416,34 @@
 		let productText = document.getElementById("productText");
 		let smallRadiusText = document.getElementById("small-radius-text");
 		let bigRadiusText = document.getElementById("big-radius-text");
+		// histogram text
+		let valueOfHistogramDescriptionText = document.getElementById("valueOfHistogramDescription");
+		let maxValueHistogramText = document.getElementById("maxValueHistogram");
+		let maxYValueHistogramText = document.getElementById("maxYValueHistogram");
+
+
 		if (selectedTypeOfDataText == "sales") {
 			if (selectedProductsMask == 3) {
-				productText.innerHTML = `There were <strong>${(numberOfCarBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} car batteries</strong> and <strong>${(numberOfHomeBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} home batteries</strong> sold.`
+				productText.innerHTML = `There were <strong>${(numberOfCarBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} car batteries</strong> and <strong>${(numberOfHomeBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} home batteries</strong> sold.`;
 			} else if (selectedProductsMask == 1) {
-				productText.innerHTML = `There were <strong>${(numberOfCarBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} car batteries</strong> sold.`
+				productText.innerHTML = `There were <strong>${(numberOfCarBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} car batteries</strong> sold.`;
 			} else if (selectedProductsMask == 2) {
-				productText.innerHTML = `There were <strong>${(numberOfHomeBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} home batteries</strong> sold.`
+				productText.innerHTML = `There were <strong>${(numberOfHomeBatteries).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} home batteries</strong> sold.`;
 			} else {
 				productText.innerHTML = `There are <strong>no</strong> products selected`;
 			}
 			// radius text
-			smallRadiusText.innerHTML = `<strong>${(minValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`
-			bigRadiusText.innerHTML = `<strong>${(maxValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`
+			smallRadiusText.innerHTML = `<strong>${(minValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`;
+			bigRadiusText.innerHTML = `<strong>${(maxValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`;
+			maxValueHistogramText.innerHTML = `<strong>${(maxValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`;
 		} else {
-			productText.innerHTML = `There were <strong>${(numberOfOrders).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} orders</strong> of which <strong>${(numberOfDelays).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> were <strong>delayed</strong>.`
-			smallRadiusText.innerHTML = `<strong>${(minValueForRadius).toFixed(4)}</strong> ${selectedTypeOfDataText}`
-			bigRadiusText.innerHTML = `<strong>${(maxValueForRadius).toFixed(4)}</strong> ${selectedTypeOfDataText}`
+			productText.innerHTML = `There were <strong>${(numberOfOrders).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} orders</strong> of which <strong>${(numberOfDelays).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> were <strong>delayed</strong>.`;
+			smallRadiusText.innerHTML = `<strong>${(minValueForRadius).toFixed(2)}</strong> ${selectedTypeOfDataText}`;
+			bigRadiusText.innerHTML = `<strong>${(maxValueForRadius).toFixed(2)}</strong> ${selectedTypeOfDataText}`;
+			maxValueHistogramText.innerHTML = `<strong>${(maxValueForRadius).toFixed(2)}</strong> ${selectedTypeOfDataText}`;
 		}
+		valueOfHistogramDescriptionText.innerHTML = selectedTypeOfDataText;
+		maxYValueHistogramText.innerHTML = `<strong>${maxOccurenceForHistogram}</strong>`;
 
 	}
 
@@ -476,12 +529,11 @@
 						typeOfDataSelectorCheckBoxes[0].checked = true;
 					} else {
 						typeOfDataSelectorCheckBoxes[0].checked = false;
-						selectedTypeOfDataText = "days of delay";
+						selectedTypeOfDataText = "avg. delay (days)";
 						salesMinMaxSelector = "averageDelay";
 						maxRadius = 30;
 						// make sales related checkboxes unclickable
 						for (const radiusSelectorCheckBox of radiusSelectorCheckBoxes) {
-							console.log("disabled");
 							radiusSelectorCheckBox.disabled = true;
 						}
 					}
@@ -686,12 +738,45 @@
 			<path d={"M 300 40 l0.0001 0"} stroke="black" style={`stroke-width: ${4}; stroke-linecap: round;`}/>
 		</svg>
 		<div class="analysis-sub-sub-div-2" id="small-default-radius-text" style=" width: 125px; left: 35px; top: 75px;">corresponds to:</div>
-		<div class="analysis-sub-sub-div-2" id="small-radius-text" style="border:1px solid black; width: 150px; display: grid; place-items: center; left: 23px; top: 105px;">x sales</div>
+		<div class="analysis-sub-sub-div-2" id="small-radius-text" style="width: 150px; display: grid; place-items: center; left: 23px; top: 105px;">x sales</div>
 
 			
 		<div class="analysis-sub-sub-div-2" id="big-default-radius-text" style="width: 125px; left: 235px; top: 75px;">corresponds to:</div>
-		<div class="analysis-sub-sub-div-2" id="big-radius-text" style="border:1px solid black; width: 150px; display: grid; place-items: center; left: 223px; top: 105px;">y sales</div>
-		
+		<div class="analysis-sub-sub-div-2" id="big-radius-text" style="width: 150px; display: grid; place-items: center; left: 223px; top: 105px;">y sales</div>
+	</div>
+
+	<div class="analysis-sub-div-1" id="histogramDiv" style="height: 260px; width: 100%; top: 450px">
+
+		<div id="histogramSubDiv" style={`border-radius: 0; border-bottom: 2px solid black; border-left: 2px solid black;  position: absolute; left: 12.5%; top: 30%; width: ${histogramWidth}px; height: ${maxHeightOfBin}px`}>
+			<svg style="width: 100%; height: 100%;">
+				{#each binValueForHistogram as value, i}
+					{console.log("i", i, "width", barWidth, "height: ",  rescaleHeightOfBin(value), "x: ", i * barWidth, "y: ", 200 - rescaleHeightOfBin(value))}
+					<rect 
+						width={barWidth}
+						height={rescaleHeightOfBin(value)}
+						x={i * barWidth}
+						y={maxHeightOfBin - rescaleHeightOfBin(value)}
+						fill="#0074e1" 
+						stroke="#fff" 
+					/>
+				{/each}
+			</svg>
+			<div style="position: absolute; left: -14px; top: {maxHeightOfBin + 4}px;">
+				<strong>0</strong>
+			</div>
+
+			<div id="valueOfHistogramDescription" style="display: grid; place-items: center; position: absolute; width: 100%; top: {maxHeightOfBin + 4}px;">
+				hello
+			</div>
+
+			<div id="maxValueHistogram" style="position: absolute; left: {histogramWidth-20}px; top: {maxHeightOfBin + 4}px;">
+				<strong>0</strong>
+			</div>
+
+			<div id="maxYValueHistogram" style="display: grid; place-items: center end; position: absolute; left: -50px; top: -5px; width: 42px">
+				<strong>705</strong>
+			</div>
+		</div>
 	</div>
 
 
