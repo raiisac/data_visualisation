@@ -1,7 +1,7 @@
 import Papa from 'papaparse';
 
 export const load = async ({ fetch }) => {
-    const responseSales = await fetch('https://raw.githubusercontent.com/raiisac/data_visualisation/sales-Tamaya/sveltekit-app/static/SalesData.csv', {
+    const responseSales = await fetch('http://localhost:5173/SalesData.csv', {
       headers: {
         'Content-Type': 'text/csv'
     }})
@@ -14,7 +14,7 @@ export const load = async ({ fetch }) => {
     // Extract unique SalesOrderCreationDate values
     const uniqueDates = [...new Set(parsedCsvSales.data.map(item => item.SalesOrderCreationDate))];
 
-    const responseSalesRadar = await fetch('https://raw.githubusercontent.com/raiisac/data_visualisation/sales-Tamaya/sveltekit-app/static/sales_radar.csv', {
+    const responseSalesRadar = await fetch('http://localhost:5173/sales_radar.csv', {
       headers: {
         'Content-Type': 'text/csv'
     }})
