@@ -73,7 +73,7 @@
 
 	// histogram variables
 	const numberOfBins = 30;
-	const maxHeightOfBin = 150;
+	const maxHeightOfBin = 165;
 	const histogramWidth = 300;
 	const barWidth = histogramWidth / numberOfBins;
 	$: binValueForHistogram = Array(numberOfBins).fill(0);
@@ -420,6 +420,7 @@
 		let valueOfHistogramDescriptionText = document.getElementById("valueOfHistogramDescription");
 		let maxValueHistogramText = document.getElementById("maxValueHistogram");
 		let maxYValueHistogramText = document.getElementById("maxYValueHistogram");
+		let histogramDescriptionText = document.getElementById("histogramDescription");
 
 
 		if (selectedTypeOfDataText == "sales") {
@@ -435,16 +436,16 @@
 			// radius text
 			smallRadiusText.innerHTML = `<strong>${(minValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`;
 			bigRadiusText.innerHTML = `<strong>${(maxValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`;
-			maxValueHistogramText.innerHTML = `<strong>${(maxValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> ${selectedTypeOfDataText}`;
+			maxValueHistogramText.innerHTML = `<strong>${(maxValueForRadius).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong>`;
 		} else {
 			productText.innerHTML = `There were <strong>${(numberOfOrders).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} orders</strong> of which <strong>${(numberOfDelays).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</strong> were <strong>delayed</strong>.`;
 			smallRadiusText.innerHTML = `<strong>${(minValueForRadius).toFixed(2)}</strong> ${selectedTypeOfDataText}`;
 			bigRadiusText.innerHTML = `<strong>${(maxValueForRadius).toFixed(2)}</strong> ${selectedTypeOfDataText}`;
-			maxValueHistogramText.innerHTML = `<strong>${(maxValueForRadius).toFixed(2)}</strong> ${selectedTypeOfDataText}`;
+			maxValueHistogramText.innerHTML = `<strong>${(maxValueForRadius).toFixed(2)}</strong>`;
 		}
 		valueOfHistogramDescriptionText.innerHTML = selectedTypeOfDataText;
 		maxYValueHistogramText.innerHTML = `<strong>${maxOccurenceForHistogram}</strong>`;
-
+		histogramDescriptionText.innerHTML = `Cities ${selectedTypeOfDataText} histogram`;
 	}
 
 	onMount(() => {
@@ -591,7 +592,6 @@
 
 
 <!-- Components -->
-
 <!-- Load the custome style -->
 <svelte:head>
     <link rel="stylesheet" href="./src/routes/app2/page.css">
@@ -667,8 +667,8 @@
 		<div class="filter-sub-div-0" id="Header" style="height: 40px; width: 100%; border-bottom: 1px solid black; box-sizing: border-box;">
 			<h2 style="position: absolute; top: -18px; left: 10px">Map</h2>
 			<div id="map settings" style="position: absolute; right: 3%; top: 15%">
-				<button on:click={changeScaleFactor(-scaleFactorIncrement)}>-</button>
-				<button on:click={changeScaleFactor(scaleFactorIncrement)}>+</button>
+				<button on:click={changeScaleFactor(-scaleFactorIncrement)}><strong>-</strong></button>
+				<button on:click={changeScaleFactor(scaleFactorIncrement)}><strong>+</strong></button>
 			</div>	
 		</div>
 		
@@ -746,8 +746,10 @@
 	</div>
 
 	<div class="analysis-sub-div-1" id="histogramDiv" style="height: 260px; width: 100%; top: 450px">
+		<div class="analysis-sub-sub-div-1" id="histogramDescription" style="display: grid; place-items: center; top: 18px;"> description </div>
+		
 
-		<div id="histogramSubDiv" style={`border-radius: 0; border-bottom: 2px solid black; border-left: 2px solid black;  position: absolute; left: 12.5%; top: 30%; width: ${histogramWidth}px; height: ${maxHeightOfBin}px`}>
+		<div id="histogramSubDiv" style={`border-radius: 0; border-bottom: 2px solid black; border-left: 2px solid black;  position: absolute; left: 12.5%; top: 22%; width: ${histogramWidth}px; height: ${maxHeightOfBin}px`}>
 			<svg style="width: 100%; height: 100%;">
 				{#each binValueForHistogram as value, i}
 					{console.log("i", i, "width", barWidth, "height: ",  rescaleHeightOfBin(value), "x: ", i * barWidth, "y: ", 200 - rescaleHeightOfBin(value))}
@@ -757,7 +759,7 @@
 						x={i * barWidth}
 						y={maxHeightOfBin - rescaleHeightOfBin(value)}
 						fill="#0074e1" 
-						stroke="#fff" 
+						stroke="#bbdeff" 
 					/>
 				{/each}
 			</svg>
@@ -765,8 +767,8 @@
 				<strong>0</strong>
 			</div>
 
-			<div id="valueOfHistogramDescription" style="display: grid; place-items: center; position: absolute; width: 100%; top: {maxHeightOfBin + 4}px;">
-				hello
+			<div id="valueOfHistogramDescription" style="display: grid; place-items: center;  font-size: 14px; position: absolute; width: 100%; top: {maxHeightOfBin + 4}px;">
+				
 			</div>
 
 			<div id="maxValueHistogram" style="position: absolute; left: {histogramWidth-20}px; top: {maxHeightOfBin + 4}px;">
@@ -775,6 +777,10 @@
 
 			<div id="maxYValueHistogram" style="display: grid; place-items: center end; position: absolute; left: -50px; top: -5px; width: 42px">
 				<strong>705</strong>
+			</div>
+
+			<div style="transform: rotate(-90deg); font-size: 14px; position: absolute; left: -90px; top: 60px; width: 150px">
+				Number of cities
 			</div>
 		</div>
 	</div>
