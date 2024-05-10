@@ -77,6 +77,7 @@
 	const histogramWidth = 300;
 	const barWidth = histogramWidth / numberOfBins;
 	$: binValueForHistogram = Array(numberOfBins).fill(0);
+	$: binRangesForHistogram = Array(numberOfBins + 1).fill(0);
 	$: maxOccurenceForHistogram = 1;
 	maxOccurenceForHistogram = 1;
 
@@ -107,8 +108,7 @@
 				}
 			}
 		}
-		console.log("binValues", binValues);
-		return binValues;
+		return [binValues, binRanges];
 	}
 	
 	$: rescale_lon = function(longitude, givenWidth) {
@@ -158,6 +158,13 @@
 		let lonLat = address_to_coordinates_map.get(data.customers[i].CustomerCity + " " + data.customers[i].CustomerCountry);
 		customerKeyToLonLat.set(data.customers[i].CustomerKey, lonLat);
 		customerKeyToCountry.set(data.customers[i].CustomerKey, data.customers[i].CustomerCountry);
+	}
+
+	// code to get city from coordinates
+	let lonLatToCity = new Map();
+	for (let i = 0; i < data.customers.length; i++) {
+		let lonLat = address_to_coordinates_map.get(data.customers[i].CustomerCity + " " + data.customers[i].CustomerCountry);
+		lonLatToCity.set(lonLat, data.customers[i].CustomerCity);
 	}
 
 	$: changeScaleFactor = function(increase) {
@@ -289,7 +296,7 @@
 		/**
 		 * saleDataMap: Map[
 		 * 					[lon,lat]: Map[
-		 * 									"country": country,
+		 * 									"country": str,
 		 * 									"totalSales": int,
 		 * 									"maxSales": int,
 		 * 								    ClientName: int
@@ -396,8 +403,12 @@
 		
 		console.log(filteredDataMap);
 		// histogram
-		binValueForHistogram = getValuesOfBins(filteredDataMap);
+		let HistogramData = getValuesOfBins(filteredDataMap);
+		binValueForHistogram = HistogramData[0];
+		binRangesForHistogram = [0].concat(HistogramData[1]);
 		maxOccurenceForHistogram = Math.max(...binValueForHistogram);
+
+		// set text
 		setAnalysisText();
 	}
 
@@ -588,6 +599,16 @@
 		});
 	})
 
+	// hover
+	$: selectedLatLonKey = undefined;
+	$: selectedPlant = undefined;
+	$: selectedHistogramIndex = undefined;
+	let mouse_x, mouse_y;
+	const setMousePosition = function(event) {
+		mouse_x = event.clientX;
+		mouse_y = event.clientY;
+	}
+
 </script>
 
 
@@ -692,17 +713,25 @@
 			{/each}
 			
 			{#each filteredDataMapKeys as latLonKey}
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 			<path
 				class="defaultCustomer"
 				d={"M " + String(rescale_lon(latLonKey[0], usedWidth)) + " " + String(rescale_lat(latLonKey[1], usedHeight)) + " l 0.0001 0"}
-			/>
+				on:mouseover={function(event) {selectedLatLonKey = latLonKey; setMousePosition(event)}}
+				on:mouseout={function() {selectedLatLonKey = undefined}}/>
+				/>
 			{/each}
 			
 	
 			{#each data.plants as plant}
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 			<path
 			class={"p" + plant.PlantKey}
 			d={"M " + String(rescale_lon(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[0], usedWidth)) + " " + String(rescale_lat(address_to_coordinates_map.get(plant.PlantCity + " " + plant.PlantCountry)[1], usedHeight)) + " l 0.0001 0"}
+			on:mouseover={function(event) {selectedPlant = plant; setMousePosition(event)}}
+			on:mouseout={function() {selectedPlant = undefined}}/>
 			/>
 			{/each}
 			</g>
@@ -712,7 +741,30 @@
 	</div>
 </main>
 
-<div class="analysis-div" style={`border:1px solid black; position: absolute; width: 400px; height: 707px; overflow: hidden; left: 915px; top: 8px;`}>
+{#if selectedLatLonKey != undefined}
+	<div class="mouse-hover-div" style="left: {mouse_x + 10}px; top: {mouse_y - 10}px">
+		Country: {filteredDataMap.get(selectedLatLonKey).get("country")}<br>
+		City: {lonLatToCity.get(selectedLatLonKey)	}<br>
+		Amount of customers: {Array.from(filteredDataMap.get(selectedLatLonKey).keys()).length - 3}<br>
+		{#if selectedTypeOfDataText == "sales"}
+			Total Sales in city: {(filteredDataMap.get(selectedLatLonKey).get("totalSales")).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}<br>
+			Max Sales in city:  {(filteredDataMap.get(selectedLatLonKey).get("maxSales")).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+		{:else}
+			Average delay in days: {(filteredDataMap.get(selectedLatLonKey).get("averageDelay")).toFixed(2)}<br>
+			Number of orders: {(filteredDataMap.get(selectedLatLonKey).get("nbOrders")).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}<br>
+			Total of delay in days: {(filteredDataMap.get(selectedLatLonKey).get("daysOfDelay")).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+		{/if}
+	</div>
+{/if}
+
+{#if selectedPlant != undefined}
+	<div class="mouse-hover-div" style="left: {mouse_x + 10}px; top: {mouse_y - 10}px">
+		Plant: {selectedPlant.PlantName}
+	</div>
+{/if}
+
+
+<div class="analysis-div" style={`border:1px solid black; overflow: hidden; position: absolute; width: 400px; height: 707px; left: 915px; top: 8px;`}>
 	<div class="filter-sub-div-0" id="Header" style="height: 40px; width: 100%; top: 0px; border-bottom: 1px solid black; box-sizing: border-box;">
 		<h2 style="position: absolute; top: -18px; left: 10px">Data Details</h2>
 	</div>
@@ -752,14 +804,17 @@
 		<div id="histogramSubDiv" style={`border-radius: 0; border-bottom: 2px solid black; border-left: 2px solid black;  position: absolute; left: 12.5%; top: 22%; width: ${histogramWidth}px; height: ${maxHeightOfBin}px`}>
 			<svg style="width: 100%; height: 100%;">
 				{#each binValueForHistogram as value, i}
-					{console.log("i", i, "width", barWidth, "height: ",  rescaleHeightOfBin(value), "x: ", i * barWidth, "y: ", 200 - rescaleHeightOfBin(value))}
+					<!-- svelte-ignore a11y-no-static-element-interactions -->
+					<!-- svelte-ignore a11y-mouse-events-have-key-events -->
 					<rect 
 						width={barWidth}
 						height={rescaleHeightOfBin(value)}
 						x={i * barWidth}
 						y={maxHeightOfBin - rescaleHeightOfBin(value)}
 						fill="#0074e1" 
-						stroke="#bbdeff" 
+						stroke="#bbdeff"
+						on:mouseover={function(event) {selectedHistogramIndex = i; setMousePosition(event);}}
+						on:mouseout={function() {selectedHistogramIndex = undefined}}
 					/>
 				{/each}
 			</svg>
@@ -784,6 +839,17 @@
 			</div>
 		</div>
 	</div>
-
-
 </div>
+
+{#if selectedHistogramIndex != undefined}
+	<div class="mouse-hover-div" style="left: {mouse_x + 10}px; top: {mouse_y - 10}px">
+		{#if selectedTypeOfDataText == "sales"}
+			start range: {binRangesForHistogram[selectedHistogramIndex].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}<br>
+			end range: {binRangesForHistogram[selectedHistogramIndex+1].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}<br>
+		{:else}
+			start range: {binRangesForHistogram[selectedHistogramIndex].toFixed(2)}<br>
+			end range: {binRangesForHistogram[selectedHistogramIndex+1].toFixed(2)}<br>
+		{/if}
+		value: {binValueForHistogram[selectedHistogramIndex]}
+	</div>
+{/if}

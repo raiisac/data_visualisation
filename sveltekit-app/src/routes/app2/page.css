@@ -5,7 +5,7 @@
   }
 
 :root {
-    --plant-radius: 10;
+    --plant-radius: 15;
     --customer-default-radius: 4;
     --slider-width: 450px;
     --slider-position-x: 250px;
@@ -16,6 +16,14 @@
     --analysis-text-left: 7%;
     --analysis-text-right: 7%;
     --analysis-text-top: 10%;
+}
+
+div.mouse-hover-div {
+    background-color: #ffffff; 
+    font-size: 10px; 
+    position: absolute;
+    border-radius: 0px;
+    border: 1px solid black; 
 }
 
 div.text {
@@ -143,8 +151,8 @@ path.p4 {
     opacity: 1;
     stroke-width: var(--plant-radius);
     vector-effect: non-scaling-stroke;
-    stroke-linecap: round;
-    stroke: rgb(0, 78, 166);
+    stroke-linecap: square;
+    stroke: rgb(0, 54, 115);
 }
 
 path.c4 {
@@ -158,8 +166,8 @@ path.p5 {
     opacity: 1;
     stroke-width: var(--plant-radius);
     vector-effect: non-scaling-stroke;
-    stroke-linecap: round;
-    stroke: rgb(180, 0, 187);
+    stroke-linecap: square;
+    stroke: rgb(114, 0, 118);
 }
 
 path.c5 {
@@ -173,8 +181,8 @@ path.p6 {
     opacity: 1;
     stroke-width: var(--plant-radius);
     vector-effect: non-scaling-stroke;
-    stroke-linecap: round;
-    stroke: rgb(166, 0, 0);
+    stroke-linecap: square;
+    stroke: rgb(98, 0, 0);
 }
 
 path.c6 {
@@ -188,8 +196,8 @@ path.p7 {
     opacity: 1;
     stroke-width: var(--plant-radius);
     vector-effect: non-scaling-stroke;
-    stroke-linecap: round;
-    stroke: rgb(0, 94, 0);
+    stroke-linecap: square;
+    stroke: rgb(0, 48, 0);
 }
 
 path.c7 {
@@ -203,8 +211,8 @@ path.p8 {
     opacity: 1;
     stroke-width: var(--plant-radius);
     vector-effect: non-scaling-stroke;
-    stroke-linecap: round;
-    stroke: rgb(177, 71, 0);
+    stroke-linecap: square;
+    stroke: rgb(106, 42, 0);
 }
 
 path.c8 {
