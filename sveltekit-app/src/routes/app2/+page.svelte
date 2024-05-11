@@ -731,11 +731,12 @@
 	<div class="mouse-hover-div" style="left: {mouse_x + 10}px; top: {mouse_y - 10 + scroll_y}px">
 		Country: {filteredDataMap.get(selectedLatLonKey).get("country")}<br>
 		City: {lonLatToCity.get(selectedLatLonKey)	}<br>
-		Amount of customers: {Array.from(filteredDataMap.get(selectedLatLonKey).keys()).length - 3}<br>
 		{#if selectedTypeOfDataText == "sales"}
+			Amount of customers: {Array.from(filteredDataMap.get(selectedLatLonKey).keys()).length - 3}<br>
 			Total Sales in city: {(filteredDataMap.get(selectedLatLonKey).get("totalSales")).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}<br>
 			Max Sales in city:  {(filteredDataMap.get(selectedLatLonKey).get("maxSales")).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
 		{:else}
+			Amount of customers: {Array.from(filteredDataMap.get(selectedLatLonKey).keys()).length - 4}<br>
 			Average delay in days: {(filteredDataMap.get(selectedLatLonKey).get("averageDelay")).toFixed(2)}<br>
 			Number of orders: {(filteredDataMap.get(selectedLatLonKey).get("nbOrders")).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}<br>
 			Total of delay in days: {(filteredDataMap.get(selectedLatLonKey).get("daysOfDelay")).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
