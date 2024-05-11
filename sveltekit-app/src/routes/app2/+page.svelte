@@ -637,7 +637,7 @@
 		<input type="checkbox" id="Sales" checked	 style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForCheckbox}%`}>
 		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 0}px; top: ${htmlVars.percentageForDivText}%`}>Sales</div>
 		<input type="checkbox" id="Delay" style={`position: absolute; left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForCheckbox}%`}>
-		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForDivText}%`}>Delay</div>
+		<div class="text" style={`left: ${htmlVars.startXPositionForPlantCheckBoxes + htmlVars.gapBetweenTextboxAndText + htmlVars.gapBetweenPlantCheckboxes * 1}px; top: ${htmlVars.percentageForDivText}%`}>Delays</div>
 	</div>
 
 
